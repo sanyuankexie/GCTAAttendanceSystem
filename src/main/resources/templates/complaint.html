@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>邮件</title>
+</head>
+<body>
+<header>
+    亲爱的<span style="color: chocolate;font-family: bold" th:text="${userId}+${userName}"></span>同学:
+</header>
+<div style="text-align: center">
+    <h1>^_^恭喜你，你已经被举报了，下次记得签退哟^_^</h1>
+    本次记录不计入总签到时长...
+</div>
+
+<div style="text-align: center">
+    <img src="https://raw.githubusercontent.com/1291945816/Images/master/keai.jpg"/>
+</div>
+</body>
+</html>
