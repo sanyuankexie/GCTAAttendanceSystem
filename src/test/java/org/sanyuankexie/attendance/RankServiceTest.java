@@ -13,15 +13,15 @@ public class RankServiceTest {
     @Resource
     private AttendanceRankService rankService;
 
-    @Test
-    public void getTopFive(){
-        Object res = rankService.getTopFiveResult();
-        System.out.println(JSONObject.toJSONString(res));
-    }
-
-    @Test
-    public void getOnlineUser(){
-        Object res = rankService.getOnlineUserList();
-        System.out.println(JSONObject.toJSONString(res));
-    }
+//    @Test
+//    public void getTopFive(){
+//        Object res = rankService.getTopFive();
+//        System.out.println(JSONObject.toJSONString(res));
+//    }
+//
+//    @Test
+//    public void getOnlineUser(){
+//        Object res = rankService.getOnlineUserList();
+//        System.out.println(JSONObject.toJSONString(res));
+//    }
 }

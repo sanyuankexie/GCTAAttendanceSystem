@@ -25,9 +25,18 @@ public interface AttendanceRecordMapper {
     void updateById(AttendanceRecord record);
 
     @Select("SELECT " +
-            "r.user_id user_id, u.user_name user_name, u.dept user_dept, u.location user_location " +
+            "r.user_id user_id, u.name user_name, u.dept user_dept, u.location user_location " +
             "FROM attendance_record r " +
-            "LEFT JOIN user u ON u.user_id=r.user_id " +
+            "LEFT JOIN user u ON u.id=r.user_id " +
             "WHERE r.status=1")
     List<RecordDTO> selectOnlineRecord();
+
+    @Select("SELECT " +
+            "r.user_id user_id, r.start start, r.end end, r.status status, " +
+            "u.name user_name, u.dept user_dept, u.location user_location " +
+            "FROM attendance_record r " +
+            "LEFT JOIN user u ON u.id=r.user_id " +
+            "WHERE r.user_id=#{userId} " +
+            "ORDER BY r.start DESC ")
+    List<RecordDTO> selectRecordListByUserId(@Param("userId") Long userId);
 }

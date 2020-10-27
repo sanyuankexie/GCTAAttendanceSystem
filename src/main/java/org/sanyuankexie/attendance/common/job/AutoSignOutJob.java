@@ -38,9 +38,8 @@ public class AutoSignOutJob extends QuartzJobBean {
         for (RecordDTO onlineUser: onlineUsers) {
             Long userId = onlineUser.getUserId();
             userService.helpSignOut(userId);
-            mailService.sendMailByUserId(userId,"autoSignOut.html","测试：<科协签到>晚间签退通知");
+            mailService.sendMailByUserId(userId,"autoSignOut.html","<科协签到>晚间签退通知");
             System.out.println("userID:"+userId);
         }
-
     }
 }

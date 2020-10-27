@@ -1,10 +1,13 @@
 package org.sanyuankexie.attendance.common.DTO;
 
-public class RecordDTO {
+public class RecordDTO{
     private Long userId;
     private String userName;
     private String userDept;
     private String userLocation;
+    private Object start;
+    private Object end;
+    private Object status; // 1 -> Online, 0 -> Offline, -1 -> Be reported
 
     public Long getUserId() {
         return userId;
@@ -36,5 +39,29 @@ public class RecordDTO {
 
     public void setUserLocation(String userLocation) {
         this.userLocation = userLocation;
+    }
+
+    public Object getStart() {
+        return start;
+    }
+
+    public void setStart(Object start) {
+        this.start = start;
+    }
+
+    public Object getEnd() {
+        return end;
+    }
+
+    public void setEnd(Object end) {
+        this.end = end;
+    }
+
+    public Object getStatus() {
+        return status;
+    }
+
+    public void setStatus(Object status) {
+        this.status = status;
     }
 }

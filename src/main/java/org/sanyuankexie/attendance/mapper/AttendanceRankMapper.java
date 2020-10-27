@@ -24,11 +24,20 @@ public interface AttendanceRankMapper {
 
     @Select("SELECT " +
             "r.user_id, r.total_time, r.week, " +
-            "u.user_name user_name, u.dept user_dept, u.location user_location " +
+            "u.name user_name, u.dept user_dept, u.location user_location " +
             "FROM attendance_rank r " +
-            "LEFT JOIN user u ON u.user_id=r.user_id " +
+            "LEFT JOIN user u ON u.id=r.user_id " +
             "WHERE week=#{week} " +
             "ORDER BY r.total_time DESC " +
             "LIMIT 0, 5")
     List<RankDTO> getTopFive(@Param("week") int week);
+
+    @Select("SELECT " +
+            "r.user_id, r.total_time, r.week, " +
+            "u.name user_name, u.dept user_dept, u.location user_location " +
+            "FROM attendance_rank r " +
+            "LEFT JOIN user u ON u.id=r.user_id " +
+            "WHERE week=#{week} " +
+            "ORDER BY r.total_time DESC ")
+    List<RankDTO> getAll(@Param("week") int week);
 }

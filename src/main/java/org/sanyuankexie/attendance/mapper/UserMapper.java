@@ -8,6 +8,6 @@ import org.sanyuankexie.attendance.model.User;
 @Mapper
 public interface UserMapper {
 
-    @Select("SELECT * FROM user WHERE user_id=#{id}")
+    @Select("SELECT * FROM user WHERE id=#{id}")
     User selectByUserId(Long id);
 }

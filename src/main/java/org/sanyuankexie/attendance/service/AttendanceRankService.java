@@ -1,10 +1,7 @@
 package org.sanyuankexie.attendance.service;
 
-import com.mysql.cj.util.TimeUtil;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.DTO.RecordDTO;
-import org.sanyuankexie.attendance.common.api.ResultVO;
-import org.sanyuankexie.attendance.common.helper.ResultHelper;
 import org.sanyuankexie.attendance.common.helper.TimeHelper;
 import org.sanyuankexie.attendance.mapper.AttendanceRankMapper;
 import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper;
@@ -12,7 +9,9 @@ import org.sanyuankexie.attendance.model.AttendanceRank;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
 public class AttendanceRankService {
@@ -34,13 +33,22 @@ public class AttendanceRankService {
         rankMapper.updateById(rank);
     }
 
-    public ResultVO<List<RankDTO>> getTopFiveResult() {
-        return ResultHelper.success(rankMapper.getTopFive(TimeHelper.getNowWeek()), "成功获取排行榜前五");
+    public List<RankDTO> getTopFive() {
+//        return rankMapper.getTopFive(TimeHelper.getNowWeek());
+        List<RankDTO> rankDTOList = rankMapper.getAll(TimeHelper.getNowWeek());
+        if (rankDTOList == null) return null;
+        List<RankDTO> resList = new ArrayList<>();
+        AtomicInteger timesOf20 = new AtomicInteger(); //20级的人数
+        for (RankDTO self : rankDTOList) {
+            if (self.getUserId() / 100000000 == 20L) {
+                timesOf20.getAndIncrement();
+            }
+            resList.add(self);
+            if (timesOf20.get() >= 5 || resList.size() >= 10) break;
+        }
+        return resList;
     }
 
-    public ResultVO<List<RecordDTO>> getOnlineUserListResult() {
-        return ResultHelper.success(getOnlineUserList(), "成功获取在线用户列表");
-    }
 
     public List<RecordDTO> getOnlineUserList() {
         return recordMapper.selectOnlineRecord();

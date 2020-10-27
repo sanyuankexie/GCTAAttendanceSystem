@@ -14,18 +14,18 @@ public class UserServiceTest {
     @Resource
     private UserService userService;
 
-    @Test
-    public void sign() {
-        Object signInRank = userService.signIn(1900310227L);
-        System.out.println(JSONObject.toJSONString(signInRank));
-
-
-        Object signOutrank = userService.signOut(1900310227L);
-        System.out.println(JSONObject.toJSONString(signOutrank));
-    }
-
-    @Test
-    public void complaint() {
-        userService.complaint(1900310227L, 1900300102L);
-    }
+//    @Test
+//    public void sign() {
+//        Object signInRank = userService.signIn(1900310227L);
+//        System.out.println(JSONObject.toJSONString(signInRank));
+//
+//
+//        Object signOutrank = userService.signOut(1900310227L);
+//        System.out.println(JSONObject.toJSONString(signOutrank));
+//    }
+//
+//    @Test
+//    public void complaint() {
+//        userService.complaint(1900310227L, 1900300102L);
+//    }
 }

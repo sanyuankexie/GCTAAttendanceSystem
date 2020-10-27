@@ -35,8 +35,8 @@ public class MailService {
             return;
         }
         //这里是搜索用户信息然后替换的
-        context.setVariable("userId", user.getUserId()); //学号
-        context.setVariable("userName", user.getUserName()); // 姓名
+        context.setVariable("userId", user.getId()); //学号
+        context.setVariable("userName", user.getName()); // 姓名
 
         String toMail = user.getEmail();
 

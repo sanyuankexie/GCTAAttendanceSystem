@@ -1,9 +1,8 @@
 package org.sanyuankexie.attendance.service;
 
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
-import org.sanyuankexie.attendance.common.DTO.RecordDTO;
-import org.sanyuankexie.attendance.common.api.ResultVO;
-import org.sanyuankexie.attendance.common.helper.ResultHelper;
+import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
+import org.sanyuankexie.attendance.common.exception.ServiceException;
 import org.sanyuankexie.attendance.common.helper.TimeHelper;
 import org.sanyuankexie.attendance.mapper.UserMapper;
 import org.sanyuankexie.attendance.model.AttendanceRank;
@@ -28,9 +27,9 @@ public class UserService {
     @Resource
     private UserMapper userMapper;
 
-    public ResultVO<RankDTO> signIn(Long userId) {
+    public RankDTO signIn(Long userId) {
         User user = getUserByUserId(userId);
-        if (user == null) return ResultHelper.error(-1, "学号不存在");
+        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
         AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(userId);
         AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, TimeHelper.getNowWeek());
         // If is first sign in
@@ -59,22 +58,22 @@ public class UserService {
             recordService.insert(newRecord);
         } else {
             //haven't sign in
-            return ResultHelper.error(-1, "不许重复签到");
+            throw new ServiceException(CExceptionEnum.USER_ONLINE);
         }
         BeanUtils.copyProperties(rank, rankDTO);
-        rankDTO.setUserName(user.getUserName());
-        return ResultHelper.success(rankDTO, "签到成功");
+        rankDTO.setUserName(user.getName());
+        return rankDTO;
     }
 
-    public ResultVO<RankDTO> signOut(Long userId) {
+    public RankDTO signOut(Long userId) {
         User user = getUserByUserId(userId);
-        if (user == null) return ResultHelper.error(-1, "学号不存在");
+        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
         AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(userId);
         AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, TimeHelper.getNowWeek());
         //Judging if Online
         RankDTO rankDTO = new RankDTO();
         if (onlineRecord == null) {
-            return ResultHelper.error(-1, "没有签到");
+            throw new ServiceException(CExceptionEnum.USER_OFFLINE);
         } else {
             onlineRecord.setStatus(0);
             onlineRecord.setEnd(System.currentTimeMillis());
@@ -84,24 +83,27 @@ public class UserService {
             rankDTO.setAccumulatedTime(onlineRecord.getEnd() - onlineRecord.getStart());
         }
         BeanUtils.copyProperties(rank, rankDTO);
-        rankDTO.setUserName(user.getUserName());
-        return ResultHelper.success(rankDTO, "签退成功");
+        rankDTO.setUserName(user.getName());
+        return rankDTO;
     }
 
-    public ResultVO<Object> complaint(Long targetUserId, Long operatorUserId) {
+    public Object complaint(Long targetUserId, Long operatorUserId) {
         //todo judge these userId
         User user = getUserByUserId(targetUserId);
-        if (user == null) return ResultHelper.error(-1, "学号不存在");
-        if (operatorUserId == null) operatorUserId = 1900310227L;
+        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
+        //todo Test
+        if (operatorUserId == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
         AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(targetUserId);
         if (onlineRecord != null) {
             onlineRecord.setStatus(-1);
             onlineRecord.setEnd(System.currentTimeMillis());
             onlineRecord.setOperatorId(operatorUserId);
             recordService.updateById(onlineRecord);
-            mailService.sendMailByUserId(targetUserId, "complaint.html", "测试：<科协签到>下线通知");
+            mailService.sendMailByUserId(targetUserId, "complaint.html", "<科协签到>下线通知");
+        } else {
+            throw new ServiceException(CExceptionEnum.USER_C_OFFLINE);
         }
-        return ResultHelper.success(null, "举报成功");
+        return null;
     }
 
     public void helpSignOut(Long userId) {
@@ -109,7 +111,7 @@ public class UserService {
         if (onlineRecord != null) {
             onlineRecord.setStatus(-1);
             onlineRecord.setEnd(System.currentTimeMillis());
-            onlineRecord.setOperatorId(10000L);
+            onlineRecord.setOperatorId(5201314L);
             recordService.updateById(onlineRecord);
         }
     }

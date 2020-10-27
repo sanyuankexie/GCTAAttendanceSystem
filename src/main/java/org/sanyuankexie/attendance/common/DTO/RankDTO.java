@@ -5,17 +5,9 @@ public class RankDTO {
     private String userName;
     private String userDept;
     private String userLocation;
-    private Long totalTime;
-    private Long accumulatedTime;
+    private Object totalTime;
+    private Object accumulatedTime;
     private int week;
-
-    public Long getAccumulatedTime() {
-        return accumulatedTime;
-    }
-
-    public void setAccumulatedTime(Long accumulatedTime) {
-        this.accumulatedTime = accumulatedTime;
-    }
 
     public Long getUserId() {
         return userId;
@@ -49,12 +41,20 @@ public class RankDTO {
         this.userLocation = userLocation;
     }
 
-    public Long getTotalTime() {
+    public Object getTotalTime() {
         return totalTime;
     }
 
-    public void setTotalTime(Long totalTime) {
+    public void setTotalTime(Object totalTime) {
         this.totalTime = totalTime;
+    }
+
+    public Object getAccumulatedTime() {
+        return accumulatedTime;
+    }
+
+    public void setAccumulatedTime(Object accumulatedTime) {
+        this.accumulatedTime = accumulatedTime;
     }
 
     public int getWeek() {
