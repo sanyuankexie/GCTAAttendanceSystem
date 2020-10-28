@@ -4,6 +4,7 @@ import org.sanyuankexie.attendance.common.api.ResultVO;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.helper.ResultHelper;
+import org.springframework.core.annotation.Order;
 import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
@@ -14,16 +15,20 @@ import org.springframework.web.bind.annotation.ResponseStatus;
 public class ExceptionControllerAdvice {
 
     @ResponseBody
+    @Order(1)
+    @ExceptionHandler({ServiceException.class})
+    @ResponseStatus(HttpStatus.OK)
+    public ResultVO<Object> customExceptionHandler(ServiceException e) {
+        e.printStackTrace();
+        return ResultHelper.error(e.getCode(), e.getMsg());
+    }
+
+    @ResponseBody
+    @Order(2)
     @ExceptionHandler({Exception.class})
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
-    //todo
-    public ResultVO<Object> customExceptionHandler(Exception e) {
+    public ResultVO<Object> exceptionHandler(Exception e) {
         e.printStackTrace();
-        if (e instanceof ServiceException) {
-            ServiceException serviceException = (ServiceException) e;
-            return ResultHelper.error(serviceException.getCode(), serviceException.getMsg());
-        } else {
-            return ResultHelper.error(CExceptionEnum.UNKNOWN.getCode(), CExceptionEnum.UNKNOWN.getMsg());
-        }
+        return ResultHelper.error(CExceptionEnum.UNKNOWN.getCode(), CExceptionEnum.UNKNOWN.getMsg());
     }
 }
