@@ -1,6 +1,5 @@
 package org.sanyuankexie.attendance.common.aspect.Implement;
 
-import org.apache.poi.ss.formula.functions.T;
 import org.aspectj.lang.JoinPoint;
 import org.aspectj.lang.annotation.AfterReturning;
 import org.aspectj.lang.annotation.Aspect;
@@ -14,9 +13,10 @@ import org.springframework.stereotype.Component;
 
 import java.lang.reflect.Field;
 import java.text.DecimalFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.List;
+import java.util.Date;
 
 
 @Component
@@ -37,21 +37,15 @@ public class ConvertTimeAspect {
         if (data instanceof RankDTO) {
             Field[] fields = {
                     ClassHelper.getObjectField(data, "totalTime"),
-                    ClassHelper.getObjectField(data, "accumulatedTime")
+                    ClassHelper.getObjectField(data, "accumulatedTime"),
             };
-            Arrays.stream(fields).forEach(
-                    it -> {
-                        try {
-                            it.setAccessible(true);
-                            if (it.get(data) != null) {
-                                it.set(data, dft.format(((long) it.get(data)) / 1000 * 1.0 / 3600));
-                            }
-                        } catch (IllegalAccessException e) {
-                            e.printStackTrace();
-                        }
-                    }
-            );
-
+            modifiedTimestampToHours(fields, data);
+        } else if (data instanceof RecordDTO) {
+            Field[] fields = {
+                    ClassHelper.getObjectField(data, "start"),
+                    ClassHelper.getObjectField(data, "end"),
+            };
+            modifiedTimestampToDate(fields, data);
         } else if (data instanceof ArrayList) {
             ArrayList dataList = (ArrayList) data;
             if (dataList.size() > 0 && dataList.get(0) instanceof RankDTO) {
@@ -68,5 +62,39 @@ public class ConvertTimeAspect {
                 );
             }
         }
+    }
+
+    private void modifiedTimestampToHours(Field[] fields, Object target) {
+        Arrays.stream(fields).forEach(
+                it -> {
+                    try {
+                        it.setAccessible(true);
+                        if (it.get(target) != null) {
+                            it.set(target, dft.format(((long) it.get(target)) / 1000 * 1.0 / 3600));
+                        }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
+    }
+
+    public void modifiedTimestampToDate(Field[] fields, Object target) {
+        Arrays.stream(fields).forEach(
+                it -> {
+                    try {
+                        it.setAccessible(true);
+                        if (it.get(target) != null) {
+                            it.set(target, getTime((long) it.get(target)));
+                        }
+                    } catch (IllegalAccessException e) {
+                        e.printStackTrace();
+                    }
+                }
+        );
+    }
+
+    public String getTime(long timestamp) {
+        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(timestamp));
     }
 }

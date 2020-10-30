@@ -27,6 +27,8 @@ public class MailService {
 
 
     public void sendMailByUserId(Long userId, String mailTemplateName, String title) {
+        title = "测试：" + title;
+
         Context context = new Context();
 
 

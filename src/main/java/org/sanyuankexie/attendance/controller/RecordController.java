@@ -40,4 +40,10 @@ public class RecordController {
     public ResultVO<List<RecordDTO>> getIndex() {
         return ResultHelper.success(rankService.getOnlineUserList(), "成功获取在线用户列表");
     }
+
+    @ConvertTime
+    @GetMapping("/online/{userId}")
+    public ResultVO<RecordDTO> isOnline(@PathVariable Long userId) {
+        return ResultHelper.success(recordService.getUserStatus(userId), "成功获取用户在线状态");
+    }
 }

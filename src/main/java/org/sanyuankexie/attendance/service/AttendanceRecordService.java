@@ -5,6 +5,8 @@ import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
 import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper;
 import org.sanyuankexie.attendance.model.AttendanceRecord;
+import org.sanyuankexie.attendance.model.User;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -61,5 +63,24 @@ public class AttendanceRecordService {
                 }
         );
         return recordDTOList;
+    }
+
+    public RecordDTO getUserStatus(Long userId) {
+        User user = userService.getUserByUserId(userId);
+        if (user == null)
+            throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
+        AttendanceRecord record = recordMapper.selectByUserIdAndStatus(userId, 1);
+        RecordDTO recordDTO = new RecordDTO();
+        if (record != null) {
+            BeanUtils.copyProperties(record, recordDTO);
+            recordDTO.setUserName(user.getName());
+            return recordDTO;
+        }
+        else{
+            recordDTO.setUserId(user.getId());
+            recordDTO.setStatus(0);
+            recordDTO.setUserName(user.getName());
+            return recordDTO;
+        }
     }
 }
