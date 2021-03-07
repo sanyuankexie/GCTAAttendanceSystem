@@ -10,6 +10,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
@@ -22,22 +23,12 @@ public class AttendanceRecordService {
     @Resource
     private AttendanceRecordMapper recordMapper;
 
-    public boolean isOnlineByUserId(Long userId) {
-        return getOnlineRecordByUserId(userId) != null;
-    }
+    DecimalFormat dft = new DecimalFormat("0.00");
 
     public AttendanceRecord getOnlineRecordByUserId(Long userId) {
         if (userService.getUserByUserId(userId) == null)
             throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
         return recordMapper.selectByUserIdAndStatus(userId, 1);
-    }
-
-    public void insert(AttendanceRecord record) {
-        recordMapper.insert(record);
-    }
-
-    public void updateById(AttendanceRecord record) {
-        recordMapper.updateById(record);
     }
 
     public List<RecordDTO> selectRecordListByUserId(Long userId) {
@@ -47,6 +38,10 @@ public class AttendanceRecordService {
         List<RecordDTO> recordDTOList = recordMapper.selectRecordListByUserId(userId);
         recordDTOList.forEach(
                 it -> {
+                    if ((int) it.getStatus() == 0) {
+//                        System.out.println((Long.getLong(String.valueOf(it.getEnd())) - Long.getLong(String.valueOf(it.getStart()))) / 1000 * 1.0 / 3600);
+                        it.setAccumulatedTime(dft.format((Long.parseLong(String.valueOf(it.getEnd())) - Long.parseLong(String.valueOf(it.getStart()))) / 1000 * 1.0 / 3600));
+                    }
                     if (it.getStart() != null) {
                         it.setStart(sdf.format(new Date((long) it.getStart())));
                     }
@@ -75,12 +70,23 @@ public class AttendanceRecordService {
             BeanUtils.copyProperties(record, recordDTO);
             recordDTO.setUserName(user.getName());
             return recordDTO;
-        }
-        else{
+        } else {
             recordDTO.setUserId(user.getId());
             recordDTO.setStatus(0);
             recordDTO.setUserName(user.getName());
             return recordDTO;
         }
+    }
+
+    public boolean isOnlineByUserId(Long userId) {
+        return getOnlineRecordByUserId(userId) != null;
+    }
+
+    public void insert(AttendanceRecord record) {
+        recordMapper.insert(record);
+    }
+
+    public void updateById(AttendanceRecord record) {
+        recordMapper.updateById(record);
     }
 }

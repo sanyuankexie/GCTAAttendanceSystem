@@ -11,6 +11,8 @@ import org.thymeleaf.context.Context;
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -27,7 +29,6 @@ public class MailService {
 
 
     public void sendMailByUserId(Long userId, String mailTemplateName, String title) {
-        title = "测试：" + title;
 
         Context context = new Context();
 
@@ -39,6 +40,8 @@ public class MailService {
         //这里是搜索用户信息然后替换的
         context.setVariable("userId", user.getId()); //学号
         context.setVariable("userName", user.getName()); // 姓名
+        context.setVariable("nowDate", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+
 
         String toMail = user.getEmail();
 

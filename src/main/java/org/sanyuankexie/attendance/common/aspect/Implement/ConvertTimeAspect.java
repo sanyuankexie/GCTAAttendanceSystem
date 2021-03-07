@@ -46,6 +46,7 @@ public class ConvertTimeAspect {
                     ClassHelper.getObjectField(data, "end"),
             };
             modifiedTimestampToDate(fields, data);
+
         } else if (data instanceof ArrayList) {
             ArrayList dataList = (ArrayList) data;
             if (dataList.size() > 0 && dataList.get(0) instanceof RankDTO) {

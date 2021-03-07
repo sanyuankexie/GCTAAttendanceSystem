@@ -99,7 +99,7 @@ public class UserService {
             onlineRecord.setEnd(System.currentTimeMillis());
             onlineRecord.setOperatorId(operatorUserId);
             recordService.updateById(onlineRecord);
-            mailService.sendMailByUserId(targetUserId, "complaint.html", "<科协签到>下线通知");
+            mailService.sendMailByUserId(targetUserId, "complaint.html", "[科协签到]: 举报下线通知");
         } else {
             throw new ServiceException(CExceptionEnum.USER_C_OFFLINE);
         }

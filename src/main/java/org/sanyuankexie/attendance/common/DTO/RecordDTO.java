@@ -8,6 +8,15 @@ public class RecordDTO{
     private Object start;
     private Object end;
     private Object status; // 1 -> Online, 0 -> Offline, -1 -> Be reported
+    private Object accumulatedTime;
+
+    public Object getAccumulatedTime() {
+        return accumulatedTime;
+    }
+
+    public void setAccumulatedTime(Object accumulatedTime) {
+        this.accumulatedTime = accumulatedTime;
+    }
 
     public Long getUserId() {
         return userId;

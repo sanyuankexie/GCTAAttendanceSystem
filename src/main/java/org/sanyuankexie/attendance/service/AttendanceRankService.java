@@ -21,18 +21,6 @@ public class AttendanceRankService {
     @Resource
     private AttendanceRecordMapper recordMapper;
 
-    public AttendanceRank selectByUserIdAndWeek(Long userId, int week) {
-        return rankMapper.selectByUserIdAndWeek(userId, week);
-    }
-
-    public void insert(AttendanceRank rank) {
-        rankMapper.insert(rank);
-    }
-
-    public void updateById(AttendanceRank rank) {
-        rankMapper.updateById(rank);
-    }
-
     public List<RankDTO> getTopFive() {
 //        return rankMapper.getTopFive(TimeHelper.getNowWeek());
         List<RankDTO> rankDTOList = rankMapper.getAll(TimeHelper.getNowWeek());
@@ -49,6 +37,17 @@ public class AttendanceRankService {
         return resList;
     }
 
+    public AttendanceRank selectByUserIdAndWeek(Long userId, int week) {
+        return rankMapper.selectByUserIdAndWeek(userId, week);
+    }
+
+    public void insert(AttendanceRank rank) {
+        rankMapper.insert(rank);
+    }
+
+    public void updateById(AttendanceRank rank) {
+        rankMapper.updateById(rank);
+    }
 
     public List<RecordDTO> getOnlineUserList() {
         return recordMapper.selectOnlineRecord();
