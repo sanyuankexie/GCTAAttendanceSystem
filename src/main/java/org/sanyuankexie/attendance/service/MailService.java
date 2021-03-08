@@ -34,7 +34,7 @@ public class MailService {
 
 
         User user = userService.getUserByUserId(userId);
-        if (user.getEmail().isEmpty()) {
+        if (user.getEmail() == null || user.getEmail().isEmpty()) {
             return;
         }
         //这里是搜索用户信息然后替换的
