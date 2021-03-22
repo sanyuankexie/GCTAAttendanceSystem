@@ -27,10 +27,10 @@ public interface AttendanceRankMapper {
             "u.name user_name, u.dept user_dept, u.location user_location " +
             "FROM attendance_rank r " +
             "LEFT JOIN user u ON u.id=r.user_id " +
-            "WHERE week=#{week} " +
+            "WHERE week=#{week} and r.user_id<#{lessThan} and r.user_id>#{moreThan} " +
             "ORDER BY r.total_time DESC " +
-            "LIMIT 0, 5")
-    List<RankDTO> getTopFive(@Param("week") int week);
+            "LIMIT 0, 10")
+    List<RankDTO> getTopFive(@Param("week") int week, @Param("moreThan") Long moreThan, @Param("lessThan") Long lessThan);
 
     @Select("SELECT " +
             "r.user_id, r.total_time, r.week, " +
@@ -40,4 +40,9 @@ public interface AttendanceRankMapper {
             "WHERE week=#{week} " +
             "ORDER BY r.total_time DESC ")
     List<RankDTO> getAll(@Param("week") int week);
+
+    @Select("UPDATE attendance_rank SET total_time=total_time+#{time} WHERE user_id=#{userId} and week=#{week}")
+    RankDTO add(@Param("userId") Long userId,
+                @Param("week") Integer week,
+                @Param("time") Long time);
 }

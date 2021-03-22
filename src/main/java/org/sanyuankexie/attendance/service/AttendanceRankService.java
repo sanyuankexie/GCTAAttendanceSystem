@@ -22,19 +22,22 @@ public class AttendanceRankService {
     private AttendanceRecordMapper recordMapper;
 
     public List<RankDTO> getTopFive() {
-//        return rankMapper.getTopFive(TimeHelper.getNowWeek());
-        List<RankDTO> rankDTOList = rankMapper.getAll(TimeHelper.getNowWeek());
+        List<RankDTO> rankDTOList = rankMapper.getTopFive(TimeHelper.getNowWeek(), 2000000000L, 2100000000L);
         if (rankDTOList == null) return null;
         List<RankDTO> resList = new ArrayList<>();
-        AtomicInteger timesOf20 = new AtomicInteger(); //20级的人数
+        AtomicInteger timesOfValid = new AtomicInteger(); //20级占用老板的的人数
         for (RankDTO self : rankDTOList) {
-            if (self.getUserId() / 100000000 == 20L) {
-                timesOf20.getAndIncrement();
+            if (!self.getUserLocation().equals("5109")) {
+                timesOfValid.getAndIncrement();
             }
             resList.add(self);
-            if (timesOf20.get() >= 5 || resList.size() >= 10) break;
+            if (timesOfValid.get() >= 5 || resList.size() >= 10) break;
         }
         return resList;
+    }
+
+    public List<RankDTO> getTopFiveOfOldMan() {
+        return rankMapper.getTopFive(TimeHelper.getNowWeek(), 0L, 2000000000L);
     }
 
     public AttendanceRank selectByUserIdAndWeek(Long userId, int week) {

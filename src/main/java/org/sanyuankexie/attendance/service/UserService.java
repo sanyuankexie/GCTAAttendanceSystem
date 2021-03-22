@@ -4,19 +4,28 @@ import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
 import org.sanyuankexie.attendance.common.helper.TimeHelper;
+import org.sanyuankexie.attendance.mapper.AttendanceRankMapper;
 import org.sanyuankexie.attendance.mapper.UserMapper;
 import org.sanyuankexie.attendance.model.AttendanceRank;
 import org.sanyuankexie.attendance.model.AttendanceRecord;
 import org.sanyuankexie.attendance.model.User;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
+import java.sql.Time;
 
 @Service
 public class UserService {
+    @Value("${static.bassword}")
+    private String bassword;
+
     @Resource
     private MailService mailService;
+
+    @Resource
+    private AttendanceRankMapper rankMapper;
 
     @Resource
     private AttendanceRankService rankService;
@@ -118,5 +127,21 @@ public class UserService {
 
     public User getUserByUserId(Long userId) {
         return userMapper.selectByUserId(userId);
+    }
+
+    public RankDTO modifyTime(String operation, Long userId, String time, String token) {
+        Integer week = TimeHelper.getNowWeek();
+        if (!token.equals(bassword)) return null;
+        if (operation.equals("add")) {
+            Long res = Long.parseLong(time) * 60 * 60 * 1000;
+            rankMapper.add(userId, week, res);
+            RankDTO rankDTO = new RankDTO();
+            BeanUtils.copyProperties(rankService.selectByUserIdAndWeek(userId, week), rankDTO);
+            return rankDTO;
+        }
+        if (operation.equals("sub")) {
+
+        }
+        return null;
     }
 }

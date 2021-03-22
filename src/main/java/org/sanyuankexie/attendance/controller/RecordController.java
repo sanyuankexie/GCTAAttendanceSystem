@@ -8,10 +8,7 @@ import org.sanyuankexie.attendance.common.helper.ResultHelper;
 import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper;
 import org.sanyuankexie.attendance.service.AttendanceRankService;
 import org.sanyuankexie.attendance.service.AttendanceRecordService;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import java.util.List;
@@ -32,8 +29,13 @@ public class RecordController {
 
     @ConvertTime
     @GetMapping("/topFive")
-    public ResultVO<List<RankDTO>> getTopFive() {
-        return ResultHelper.success(rankService.getTopFive(), "成功获取有效排行榜");
+    public ResultVO<List<RankDTO>> getTopFive(@RequestParam(value = "old-man", defaultValue = "") String oldMan) {
+        if (oldMan == null || oldMan.equals("")) {
+            return ResultHelper.success(rankService.getTopFive(), "成功获取有效排行榜");
+        }else {
+            return ResultHelper.success(rankService.getTopFiveOfOldMan(), "成功获取老人有效排行榜");
+        }
+
     }
 
     @GetMapping("/online")

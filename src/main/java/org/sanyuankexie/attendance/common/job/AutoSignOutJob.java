@@ -24,6 +24,7 @@ public class AutoSignOutJob extends QuartzJobBean {
 
     @Override
     protected void executeInternal(JobExecutionContext jobExecutionContext) {
+        System.out.println("开始自动签退......");
 
         List<RecordDTO> onlineUsers = attendanceRankService.getOnlineUserList();
         if (onlineUsers.isEmpty()) {
@@ -34,8 +35,8 @@ public class AutoSignOutJob extends QuartzJobBean {
             try {
                 Long userId = onlineUser.getUserId();
                 userService.helpSignOut(userId);
-                mailService.sendMailByUserId(userId, "autoSignOut.html", "[科协签到]: 晚间签退通知");
-                System.out.println("userID:" + userId);
+                mailService.sendMailByUserId(userId, "AutoSignOut.html", "[科协签到]: 晚间签退通知");
+                System.out.println("UserID:" + userId);
             } catch (Exception e) {
                 e.printStackTrace();
             }
