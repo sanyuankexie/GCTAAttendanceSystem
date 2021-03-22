@@ -27,13 +27,13 @@ public class AttendanceRecordService {
 
     public AttendanceRecord getOnlineRecordByUserId(Long userId) {
         if (userService.getUserByUserId(userId) == null)
-            throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
+            throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
         return recordMapper.selectByUserIdAndStatus(userId, 1);
     }
 
     public List<RecordDTO> selectRecordListByUserId(Long userId) {
         if (userService.getUserByUserId(userId) == null)
-            throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
+            throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
         List<RecordDTO> recordDTOList = recordMapper.selectRecordListByUserId(userId);
         recordDTOList.forEach(
@@ -63,7 +63,7 @@ public class AttendanceRecordService {
     public RecordDTO getUserStatus(Long userId) {
         User user = userService.getUserByUserId(userId);
         if (user == null)
-            throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
+            throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
         AttendanceRecord record = recordMapper.selectByUserIdAndStatus(userId, 1);
         RecordDTO recordDTO = new RecordDTO();
         if (record != null) {

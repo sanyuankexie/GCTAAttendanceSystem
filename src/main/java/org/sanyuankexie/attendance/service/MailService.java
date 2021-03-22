@@ -1,6 +1,8 @@
 package org.sanyuankexie.attendance.service;
 
 
+import com.therainisme.AmeBox.logUtil.LogFactory;
+import com.therainisme.AmeBox.logUtil.Logger;
 import org.sanyuankexie.attendance.model.User;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
@@ -18,6 +20,8 @@ import java.util.regex.Pattern;
 
 @Service
 public class MailService {
+    Logger logger = LogFactory.getLogger(this);
+
     @Resource
     private UserService userService;
 
@@ -71,8 +75,7 @@ public class MailService {
 
             javaMailSender.send(messageHelper.getMimeMessage());
         } catch (MessagingException e) {
-            e.printStackTrace();
-            System.out.println("发送" + userId + "的邮件失败");
+            logger.error(false, "发送<" + userId + ">的邮件失败");
         }
     }
 }

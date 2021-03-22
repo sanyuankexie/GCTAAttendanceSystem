@@ -1,5 +1,6 @@
 package org.sanyuankexie.attendance.service;
 
+import org.sanyuankexie.attendance.advice.ExceptionControllerAdvice;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
@@ -12,6 +13,7 @@ import org.sanyuankexie.attendance.model.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
 import java.sql.Time;
@@ -36,9 +38,10 @@ public class UserService {
     @Resource
     private UserMapper userMapper;
 
+    @Transactional
     public RankDTO signIn(Long userId) {
         User user = getUserByUserId(userId);
-        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
+        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
         AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(userId);
         AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, TimeHelper.getNowWeek());
         // If is first sign in
@@ -67,22 +70,23 @@ public class UserService {
             recordService.insert(newRecord);
         } else {
             //haven't sign in
-            throw new ServiceException(CExceptionEnum.USER_ONLINE);
+            throw new ServiceException(CExceptionEnum.USER_ONLINE, userId);
         }
         BeanUtils.copyProperties(rank, rankDTO);
         rankDTO.setUserName(user.getName());
         return rankDTO;
     }
 
+    @Transactional
     public RankDTO signOut(Long userId) {
         User user = getUserByUserId(userId);
-        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
+        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
         AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(userId);
         AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, TimeHelper.getNowWeek());
         //Judging if Online
         RankDTO rankDTO = new RankDTO();
         if (onlineRecord == null) {
-            throw new ServiceException(CExceptionEnum.USER_OFFLINE);
+            throw new ServiceException(CExceptionEnum.USER_OFFLINE, userId);
         } else {
             onlineRecord.setStatus(0);
             onlineRecord.setEnd(System.currentTimeMillis());
@@ -99,9 +103,9 @@ public class UserService {
     public Object complaint(Long targetUserId, Long operatorUserId) {
         //todo judge these userId
         User user = getUserByUserId(targetUserId);
-        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
+        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, targetUserId);
         //todo Test
-        if (operatorUserId == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST);
+        if (operatorUserId == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, operatorUserId);
         AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(targetUserId);
         if (onlineRecord != null) {
             onlineRecord.setStatus(-1);
@@ -110,7 +114,7 @@ public class UserService {
             recordService.updateById(onlineRecord);
             mailService.sendMailByUserId(targetUserId, "complaint.html", "[科协签到]: 举报下线通知");
         } else {
-            throw new ServiceException(CExceptionEnum.USER_C_OFFLINE);
+            throw new ServiceException(CExceptionEnum.USER_C_OFFLINE, targetUserId);
         }
         return null;
     }
@@ -129,6 +133,7 @@ public class UserService {
         return userMapper.selectByUserId(userId);
     }
 
+    @Transactional
     public RankDTO modifyTime(String operation, Long userId, String time, String token) {
         Integer week = TimeHelper.getNowWeek();
         if (!token.equals(bassword)) return null;
