@@ -16,10 +16,15 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import javax.annotation.Resource;
+import javax.xml.crypto.Data;
 import java.sql.Time;
+import java.util.ArrayList;
+import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class UserService {
+    private final ConcurrentHashMap<Long, Long> defenderMap = new ConcurrentHashMap<>();
+
     @Value("${static.bassword}")
     private String bassword;
 
@@ -44,6 +49,19 @@ public class UserService {
         if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
         AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(userId);
         AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, TimeHelper.getNowWeek());
+
+        //defender start
+        Long now = System.currentTimeMillis();
+        if (defenderMap.get(userId) == null) {
+            defenderMap.put(userId, System.currentTimeMillis());
+        } else {
+            if (now - defenderMap.get(userId) <= 1000 * 15) {
+                throw new ServiceException(CExceptionEnum.FREQUENT_OPERATION, userId);
+            }
+        }
+        defenderMap.put(userId, now);
+        //defender end
+
         // If is first sign in
         if (rank == null) {
             //id, userId, week, totalTime

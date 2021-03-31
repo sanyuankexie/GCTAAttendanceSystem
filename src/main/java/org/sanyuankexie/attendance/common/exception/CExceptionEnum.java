@@ -7,6 +7,7 @@ public enum CExceptionEnum {
     USER_OFFLINE(-202, "宁没有签到噢"),
     USER_ID_NO_EXIST(-203, "学号不存在"),
     USER_C_OFFLINE(-204, "宁想举报的人不在线"),
+    FREQUENT_OPERATION(-205, "宁操作太频繁了呢"),
     ;
     private Integer code;
     private String msg;
