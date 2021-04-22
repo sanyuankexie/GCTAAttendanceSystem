@@ -23,7 +23,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @Service
 public class UserService {
-    private final ConcurrentHashMap<Long, Long> defenderMap = new ConcurrentHashMap<>();
+    private static final ConcurrentHashMap<Long, Long> defenderMap = new ConcurrentHashMap<>();
 
     @Value("${static.bassword}")
     private String bassword;

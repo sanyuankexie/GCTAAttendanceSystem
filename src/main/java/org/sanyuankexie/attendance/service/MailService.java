@@ -66,7 +66,7 @@ public class MailService {
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
-            messageHelper.setFrom("guetsanyuankexie@163.com"); // 这里换成科协的邮箱
+            messageHelper.setFrom("科协官方" + "<official@kexie.space>"); // 这里换成科协的邮箱
             messageHelper.setTo(user.getEmail());
             messageHelper.setSubject(title);
 
