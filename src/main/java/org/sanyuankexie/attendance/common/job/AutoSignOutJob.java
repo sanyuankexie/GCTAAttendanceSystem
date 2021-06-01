@@ -2,18 +2,19 @@ package org.sanyuankexie.attendance.common.job;
 
 import com.therainisme.AmeBox.logUtil.LogFactory;
 import com.therainisme.AmeBox.logUtil.Logger;
-import org.quartz.JobExecutionContext;
 import org.sanyuankexie.attendance.common.DTO.RecordDTO;
 import org.sanyuankexie.attendance.service.AttendanceRankService;
 import org.sanyuankexie.attendance.service.MailService;
 import org.sanyuankexie.attendance.service.UserService;
-import org.springframework.scheduling.quartz.QuartzJobBean;
-import org.springframework.transaction.annotation.Transactional;
+import org.springframework.scheduling.annotation.Scheduled;
+import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import java.util.List;
 
-public class AutoSignOutJob extends QuartzJobBean {
+
+@Service
+public class AutoSignOutJob {
     Logger logger = LogFactory.getLogger(this);
 
     @Resource
@@ -25,9 +26,8 @@ public class AutoSignOutJob extends QuartzJobBean {
     @Resource
     private AttendanceRankService attendanceRankService;
 
-
-    @Override
-    protected void executeInternal(JobExecutionContext jobExecutionContext) {
+    @Scheduled(cron = "00 30 23 * * ?")
+    protected void executeInternal() {
         logger.log(true, "<System>开始自动签退");
 
         List<RecordDTO> onlineUsers = attendanceRankService.getOnlineUserList();

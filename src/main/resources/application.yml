@@ -1,0 +1,16 @@
+server:
+  port: 8088
+spring:
+  mvc:
+    view:
+      prefix: classpath:/templates/
+      suffix: .html
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+  jackson:
+    default-property-inclusion: non_null
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+  mapper-locations: classpath:mapper/*.xml
+
