@@ -1,12 +1,15 @@
 package org.sanyuankexie.attendance.service;
 
 import org.sanyuankexie.attendance.common.DTO.RecordDTO;
+import org.sanyuankexie.attendance.common.api.ResultVO;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
+import org.sanyuankexie.attendance.common.helper.ResultHelper;
 import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper;
 import org.sanyuankexie.attendance.model.AttendanceRecord;
 import org.sanyuankexie.attendance.model.User;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -23,6 +26,10 @@ public class AttendanceRecordService {
     @Resource
     private AttendanceRecordMapper recordMapper;
 
+    @Value("${attendance.term}")
+    private String term;
+
+
     DecimalFormat dft = new DecimalFormat("0.00");
 
     public AttendanceRecord getOnlineRecordByUserId(Long userId) {
@@ -31,11 +38,17 @@ public class AttendanceRecordService {
         return recordMapper.selectByUserIdAndStatus(userId, 1);
     }
 
-    public List<RecordDTO> selectRecordListByUserId(Long userId) {
+    //查询当前学期
+    public List<RecordDTO> selectRecordListByUserId(Long userId){
+
+
+        return selectRecordListByUserId(userId,this.term);
+    }
+    public List<RecordDTO> selectRecordListByUserId(Long userId,String term) {
         if (userService.getUserByUserId(userId) == null)
             throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
-        List<RecordDTO> recordDTOList = recordMapper.selectRecordListByUserId(userId);
+        List<RecordDTO> recordDTOList = recordMapper.selectRecordListByUserId(userId,term);
         recordDTOList.forEach(
                 it -> {
                     if ((int) it.getStatus() == 0) {
@@ -88,5 +101,9 @@ public class AttendanceRecordService {
 
     public void updateById(AttendanceRecord record) {
         recordMapper.updateById(record);
+    }
+
+    public List<String> getTerm(Long userId){
+        return recordMapper.selectTerm(userId);
     }
 }

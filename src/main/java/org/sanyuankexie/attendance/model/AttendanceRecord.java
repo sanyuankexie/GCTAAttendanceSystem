@@ -15,6 +15,7 @@ public class AttendanceRecord {
     private Long end;
     private int status; // 1 -> Online, 0 -> Offline, -1 -> Be reported
     private Long operatorId;
+    private String term;
 
 
 }

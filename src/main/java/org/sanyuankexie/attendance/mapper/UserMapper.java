@@ -6,7 +6,7 @@ import org.apache.ibatis.annotations.Select;
 import org.sanyuankexie.attendance.model.User;
 
 @Mapper
-public interface UserMapper {
+public interface UserMapper  {
 
     @Select("SELECT * FROM user WHERE id=#{id}")
     User selectByUserId(Long id);

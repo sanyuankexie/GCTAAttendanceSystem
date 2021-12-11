@@ -5,12 +5,24 @@ spring:
     view:
       prefix: classpath:/templates/
       suffix: .html
-  datasource:
-    driver-class-name: com.mysql.cj.jdbc.Driver
   jackson:
     default-property-inclusion: non_null
+  mail:
+    protocol: smtp
+    default-encoding: UTF-8
+    properties:
+      smtp:
+        socketFactory:
+          port: 465
+          class: javax.net.ssl.SSLSocketFactory
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
+#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #mybatis日志
   mapper-locations: classpath:mapper/*.xml
 
+
+attendance:
+  term: '2021_2022_1'  #学期 1 2表示上下学期
+  week: '2021-9-6'  #第一周星期一
+  leve: 21

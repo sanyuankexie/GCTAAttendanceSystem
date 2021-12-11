@@ -4,7 +4,9 @@ package org.sanyuankexie.attendance.service;
 import com.therainisme.AmeBox.logUtil.LogFactory;
 import com.therainisme.AmeBox.logUtil.Logger;
 import org.sanyuankexie.attendance.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
+import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -22,14 +24,17 @@ import java.util.regex.Pattern;
 public class MailService {
     Logger logger = LogFactory.getLogger(this);
 
-    @Resource
-    private UserService userService;
+    private final UserService userService;
 
-    @Resource
-    private TemplateEngine templateEngine;
+    private final TemplateEngine templateEngine;
 
-    @Resource
-    private JavaMailSender javaMailSender;
+    private final JavaMailSender javaMailSender;
+
+    public MailService(JavaMailSender javaMailSender, UserService userService, TemplateEngine templateEngine) {
+        this.javaMailSender = javaMailSender;
+        this.userService = userService;
+        this.templateEngine = templateEngine;
+    }
 
 
     public void sendMailByUserId(Long userId, String mailTemplateName, String title) {
@@ -65,7 +70,7 @@ public class MailService {
         //下面是发送信息
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage);
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage,"UTF-8");
             messageHelper.setFrom("科协官方" + "<official@kexie.space>"); // 这里换成科协的邮箱
             messageHelper.setTo(user.getEmail());
             messageHelper.setSubject(title);

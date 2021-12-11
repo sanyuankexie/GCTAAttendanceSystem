@@ -7,9 +7,9 @@ import org.springframework.scheduling.annotation.EnableScheduling;
 import org.springframework.transaction.annotation.EnableTransactionManagement;
 
 @SpringBootApplication
-@MapperScan("org.sanyuankexie.attendance.mapper") //扫描mapper
-@EnableScheduling   //开启计划任务
-@EnableTransactionManagement  //开启sql事务
+@MapperScan("org.sanyuankexie.attendance.mapper")
+@EnableScheduling
+@EnableTransactionManagement
 public class GctaAttendanceSystemApplication {
 
     public static void main(String[] args) {

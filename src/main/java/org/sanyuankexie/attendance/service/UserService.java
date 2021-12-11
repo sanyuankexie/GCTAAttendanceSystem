@@ -1,32 +1,40 @@
 package org.sanyuankexie.attendance.service;
 
+import com.alibaba.excel.EasyExcel;
+import com.alibaba.excel.read.listener.PageReadListener;
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import org.sanyuankexie.attendance.advice.ExceptionControllerAdvice;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
 import org.sanyuankexie.attendance.common.helper.TimeHelper;
 import org.sanyuankexie.attendance.mapper.AttendanceRankMapper;
+import org.sanyuankexie.attendance.mapper.UserInsertMapper;
 import org.sanyuankexie.attendance.mapper.UserMapper;
 import org.sanyuankexie.attendance.model.AttendanceRank;
 import org.sanyuankexie.attendance.model.AttendanceRecord;
+import org.sanyuankexie.attendance.model.SystemInfo;
 import org.sanyuankexie.attendance.model.User;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.bind.annotation.RequestPart;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.xml.crypto.Data;
+import java.io.IOException;
+import java.lang.reflect.Field;
 import java.sql.Time;
-import java.util.ArrayList;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.regex.Pattern;
 
 @Service
 public class UserService {
     private static final ConcurrentHashMap<Long, Long> defenderMap = new ConcurrentHashMap<>();
-
-    @Value("${static.bassword}")
-    private String bassword;
 
     @Resource
     private MailService mailService;
@@ -43,15 +51,30 @@ public class UserService {
     @Resource
     private UserMapper userMapper;
 
+    private final SystemInfo systemInfo;
+
+    private final TimeHelper timeHelper;
+
+    public UserService(TimeHelper timeHelper, SystemInfo systemInfo) {
+        this.timeHelper = timeHelper;
+        this.systemInfo = systemInfo;
+    }
+
+
     @Transactional
     public RankDTO signIn(Long userId) {
+        Long now = System.currentTimeMillis();
+        if(timeHelper.noAllSign(now)){
+            throw new ServiceException(CExceptionEnum.No_ALLOW_TIME, userId);
+        }
         User user = getUserByUserId(userId);
+
         if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
         AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(userId);
-        AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, TimeHelper.getNowWeek());
+        AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, timeHelper.getNowWeek());
 
         //defender start
-        Long now = System.currentTimeMillis();
+
         if (defenderMap.get(userId) == null) {
             defenderMap.put(userId, System.currentTimeMillis());
         } else {
@@ -66,11 +89,13 @@ public class UserService {
         if (rank == null) {
             //id, userId, week, totalTime
             rank = new AttendanceRank(
-                    String.valueOf(TimeHelper.getNowWeek()) + String.valueOf(userId),
-                    userId,
-                    TimeHelper.getNowWeek(),
-                    0L
+                    1,
+                     userId,
+                    timeHelper.getNowWeek(),
+                    0L,systemInfo.getTerm()
+
             );
+            rank.setId(null);
             rankService.insert(rank);
         }
         //Judging if Online
@@ -83,7 +108,7 @@ public class UserService {
                     System.currentTimeMillis(),
                     null,
                     1,
-                    userId
+                    userId,systemInfo.getTerm()
             );
             recordService.insert(newRecord);
         } else {
@@ -100,7 +125,8 @@ public class UserService {
         User user = getUserByUserId(userId);
         if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
         AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(userId);
-        AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, TimeHelper.getNowWeek());
+        AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, timeHelper.getNowWeek());
+
         //Judging if Online
         RankDTO rankDTO = new RankDTO();
         if (onlineRecord == null) {
@@ -153,8 +179,8 @@ public class UserService {
 
     @Transactional
     public RankDTO modifyTime(String operation, Long userId, String time, String token) {
-        Integer week = TimeHelper.getNowWeek();
-        if (!token.equals(bassword)) return null;
+        int week = timeHelper.getNowWeek();
+        if (!token.equals(systemInfo.getPassword())) return null;
         if (operation.equals("add")) {
             Long res = Long.parseLong(time) * 60 * 60 * 1000;
             rankMapper.add(userId, week, res);
@@ -166,5 +192,121 @@ public class UserService {
 
         }
         return null;
+    }
+
+    public Map<String,Object> importUser(MultipartFile file,String password){
+        Map<String,Object> map=new HashMap<>();
+        if (!systemInfo.getPassword().equals(password)){
+            map.put("result","密码不正确");
+
+            return  map;
+        }
+        dataDao(file,map);
+        return  map;
+
+
+
+    }
+
+
+
+    @Autowired
+    UserInsertMapper insertMapper;
+
+    public void dataDao(MultipartFile file,Map<String,Object> map) {
+        final Integer[] sum = {0};
+        final Integer[] in={0};
+        Integer[] up={0};
+        List<String> userInfo=new ArrayList<>();
+        try {
+            EasyExcel.read(file.getInputStream(), User.class, new PageReadListener<User>(dataList -> {
+                for (User demoData : dataList) {
+                    sum[0]++;
+
+                    if (isNull(demoData)){
+                        info(userInfo,demoData,"用户数据不全(除github)");
+                        continue;
+                    }
+
+                    if (!checkMail(demoData.getEmail())){
+                        info(userInfo,demoData,"邮箱检验不通过");
+                        continue;
+                    }
+
+                    if ( String.valueOf(demoData.getId()).length()!="2000300223".length()){
+                        info(userInfo,demoData,"邮箱长度不正确");
+                        continue;
+
+                    }
+                    String[] location={"5109","5102","5108"};
+                    if(Arrays.stream(location).noneMatch(v-> v.equals(demoData.getLocation()))) {
+                        info(userInfo,demoData,"所在位置存在问题");
+                        continue;
+                    }
+                    String[] dept={"多媒体部","软件部","硬件部","老人"};
+                    if(Arrays.stream(dept).noneMatch(v-> v.equals(demoData.getDept()))) {
+                        info(userInfo,demoData,"所在部门存在问题");
+                        continue;
+                    }
+
+                    QueryWrapper<User> userQueryWrapper=new QueryWrapper<>();
+
+                    userQueryWrapper.eq("id",demoData.getId());
+                    User user = insertMapper.selectOne(userQueryWrapper);
+
+                    if (user!=null){
+                        List<String> change = getChange(user, demoData);
+                        if (change.size()!=0){
+                            insertMapper.updateById(demoData);
+                            info(userInfo,user,"更新了数据("+ change+")");
+                            up[0]++;
+                        }
+                    }else{
+                        insertMapper.insert(demoData);
+                        in[0]++;
+                    }
+                }
+            })).sheet().doRead();
+        } catch (IOException e) {
+            e.printStackTrace();
+            map.put("result","传入异常");
+        }
+        map.put("info",userInfo);
+        map.put("result","总共人数:"+sum[0]+" 修改人数:"+up[0]+" 新增人数:"+in[0]);
+    }
+
+    public  void info(List<String> list,User user,String msg){
+        list.add(user.getId() + "(" + user.getName() + ")" + ":" + msg);
+    }
+    public  boolean isNull(User user){
+
+        return  user.getId()==null||user.getDept()==null||user.getLocation()==null||user.getName()==null||user.getEmail()==null;
+
+    }
+
+    public boolean checkMail(String email){
+        String regEx="^[A-Za-z\\d]+([-_.][A-Za-z\\d]+)*@([A-Za-z\\d]+[-.])+[A-Za-z\\d]{2,4}$";
+        return Pattern.matches(regEx,email);
+    }
+
+    public List<String> getChange(User oU,User nU){
+        List<String> info=new ArrayList<>();
+        Field[] declaredFields = User.class.getDeclaredFields();
+        for(Field f:declaredFields){
+            f.setAccessible(true);
+            try {
+                if (!String.valueOf(f.get(oU)).equals(String.valueOf(f.get(nU)))){
+                    if(f.getName().equals("githubId")){
+                        if(f.get(nU)==null){
+                            continue;
+                        }
+                    }
+                    info.add(f.get(oU)+"->"+f.get(nU));
+                }
+            } catch (IllegalAccessException e) {
+                e.printStackTrace();
+            }
+        }
+        return info;
     }
 }

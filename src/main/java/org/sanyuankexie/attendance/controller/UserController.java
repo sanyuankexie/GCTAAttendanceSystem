@@ -1,14 +1,17 @@
 package org.sanyuankexie.attendance.controller;
 
 import com.alibaba.fastjson.JSONObject;
+import org.apache.ibatis.annotations.Param;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.api.ResultVO;
 import org.sanyuankexie.attendance.common.aspect.annotation.ConvertTime;
 import org.sanyuankexie.attendance.common.helper.ResultHelper;
 import org.sanyuankexie.attendance.service.UserService;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import java.util.Map;
 
 @RestController
 @RequestMapping(value = "/api/user")
@@ -16,6 +19,7 @@ public class UserController {
 
     @Resource
     private UserService userService;
+
 
 
     @ConvertTime
@@ -44,6 +48,11 @@ public class UserController {
                 jsonObject.getString("operation"),
                 jsonObject.getLong("userId"),
                 jsonObject.getString("time"),
-                jsonObject.getString("token")));
+              jsonObject.getString("token")));
+    }
+
+    @PostMapping("/import")
+    public ResultVO<Map<String, Object>> impUser(@RequestPart("user") MultipartFile file, @Param("password") String password ){
+        return ResultHelper.success(userService.importUser(file,password));
     }
 }

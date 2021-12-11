@@ -10,7 +10,7 @@
     </parent>
     <groupId>org.sanyuankexie</groupId>
     <artifactId>attendance</artifactId>
-    <version>0.0.4</version>
+    <version>0.1.0</version>
     <name>GCTAAttendanceSystem</name>
     <description>For GCTA attendance system</description>
 
@@ -20,6 +20,11 @@
 
     <dependencies>
 
+        <dependency>
+            <groupId>com.alibaba</groupId>
+            <artifactId>druid-spring-boot-starter</artifactId>
+            <version>1.1.17</version>
+        </dependency>
         <dependency>
             <groupId>com.baomidou</groupId>
             <artifactId>mybatis-plus-boot-starter</artifactId>
@@ -77,9 +82,8 @@
         <dependency>
             <groupId>com.alibaba</groupId>
             <artifactId>easyexcel</artifactId>
-            <version>2.2.3</version>
+            <version>3.0.0-beta3</version>
         </dependency>
-
         <dependency>
             <groupId>mysql</groupId>
             <artifactId>mysql-connector-java</artifactId>
@@ -115,7 +119,8 @@
             <plugin>
                 <groupId>org.springframework.boot</groupId>
                 <artifactId>spring-boot-maven-plugin</artifactId>
-                <!--                import jar must add-->
+                <version>2.3.4.RELEASE</version>
+<!--                import jar must add-->
                 <configuration>
                     <includeSystemScope>true</includeSystemScope>
                     <excludes>
@@ -123,6 +128,7 @@
                             <groupId>org.projectlombok</groupId>
                             <artifactId>lombok</artifactId>
                         </exclude>
+
                     </excludes>
                 </configuration>
             </plugin>
