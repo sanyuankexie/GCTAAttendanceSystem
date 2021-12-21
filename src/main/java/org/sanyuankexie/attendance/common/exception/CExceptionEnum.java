@@ -12,6 +12,7 @@ public enum CExceptionEnum {
     PASSWORD_INCORRECT(-207, "密码错误"),
     DATE_ERR(-208,"周序不合理"),
     WEEK_NO_END(-209,"本周未结束");
+//    WEEK_NO_END(-209,"本周未结束");
 
     private Integer code;
     private String msg;

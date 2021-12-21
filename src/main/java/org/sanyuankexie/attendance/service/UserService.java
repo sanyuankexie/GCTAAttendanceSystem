@@ -182,7 +182,8 @@ public class UserService {
         int week = timeHelper.getNowWeek();
         if (!token.equals(systemInfo.getPassword())) return null;
         if (operation.equals("add")) {
-            Long res = Long.parseLong(time) * 60 * 60 * 1000;
+
+            Long res = (long) (Double.parseDouble(time)* 60 * 60 * 1000);
             rankMapper.add(userId, week, res);
             RankDTO rankDTO = new RankDTO();
             BeanUtils.copyProperties(rankService.selectByUserIdAndWeek(userId, week), rankDTO);
@@ -191,7 +192,8 @@ public class UserService {
         if (operation.equals("sub")) {
 
         }
-        return null;
+        throw new ServiceException(CExceptionEnum.UNKNOWN, userId);
+//        return null;
     }
 
     public Map<String,Object> importUser(MultipartFile file,String password){

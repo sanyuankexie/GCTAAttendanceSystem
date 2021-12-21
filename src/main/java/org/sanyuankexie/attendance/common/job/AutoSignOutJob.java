@@ -26,8 +26,15 @@ public class AutoSignOutJob {
     @Resource
     private AttendanceRankService attendanceRankService;
 
-    @Scheduled(cron = "00 30 23 * * ?")
-    protected void executeInternal() {
+    //工作日
+    @Scheduled(cron = "00 30 23 ? * 1-4,7")
+    void work(){ executeInternal(); }
+    //周五周六11.30不签退
+    @Scheduled(cron = "00 00 00 ? * 6-7")
+    void weekend(){
+        executeInternal();
+    }
+    public void executeInternal() {
         logger.log(true, "<System>开始自动签退");
 
         List<RecordDTO> onlineUsers = attendanceRankService.getOnlineUserList();

@@ -15,6 +15,13 @@ spring:
         socketFactory:
           port: 465
           class: javax.net.ssl.SSLSocketFactory
+  datasource:
+    druid:
+      initial-size: 5
+      min-idle: 5
+      max-active: 20
+#      max-wait:
+
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true

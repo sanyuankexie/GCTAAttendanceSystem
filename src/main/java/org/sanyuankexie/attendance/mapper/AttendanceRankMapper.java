@@ -67,4 +67,12 @@ public interface AttendanceRankMapper {
             " left JOIN (SELECT user_id,term,total_time,week FROM attendance_rank where week=#{week} and term=#{term}) as r on r.user_id=u.id where  not (u.id > #{lessThan} or u.id in (#{isLeve})) " +
             "ORDER BY total_time DESC")
     List<RankExport> getOldWeekRank(@Param("term") String term, @Param("week") String week, @Param("lessThan")Long lessThan, @Param("isLeve")String isLeve);
+
+
+
+    //新生学期总时常
+    @Select("SELECT id ,name ,dept, round(sum(total_time)/1000/60,2) as total_time from user as u" +
+            " left JOIN (SELECT user_id,term,total_time FROM attendance_rank where term=#{term}) as r on r.user_id=u.id where  u.id > #{lessThan} or u.id in (#{isLeve}) " +
+            "  group by id ORDER BY total_time DESC")
+    List<RankExport> getAllNewWeekRanMine(@Param("term") String term, @Param("lessThan")Long lessThan, @Param("isLeve")String isLeve);
 }
