@@ -1,10 +1,9 @@
 package org.sanyuankexie.attendance.service;
 
 import org.sanyuankexie.attendance.common.DTO.RecordDTO;
-import org.sanyuankexie.attendance.common.api.ResultVO;
+import org.sanyuankexie.attendance.common.DTO.UserStatusEnum;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
-import org.sanyuankexie.attendance.common.helper.ResultHelper;
 import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper;
 import org.sanyuankexie.attendance.model.AttendanceRecord;
 import org.sanyuankexie.attendance.model.User;
@@ -35,7 +34,7 @@ public class AttendanceRecordService {
     public AttendanceRecord getOnlineRecordByUserId(Long userId) {
         if (userService.getUserByUserId(userId) == null)
             throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
-        return recordMapper.selectByUserIdAndStatus(userId, 1);
+        return recordMapper.selectByUserIdAndStatus(userId, UserStatusEnum.ONLINE.getStatus());
     }
 
     //查询当前学期
@@ -51,9 +50,11 @@ public class AttendanceRecordService {
         List<RecordDTO> recordDTOList = recordMapper.selectRecordListByUserId(userId,term);
         recordDTOList.forEach(
                 it -> {
-                    if ((int) it.getStatus() == 0) {
-//                        System.out.println((Long.getLong(String.valueOf(it.getEnd())) - Long.getLong(String.valueOf(it.getStart()))) / 1000 * 1.0 / 3600);
+                    UserStatusEnum status = it.getStatus();
+                    if (  status== UserStatusEnum.OFFLINE) {
                         it.setAccumulatedTime(dft.format((Long.parseLong(String.valueOf(it.getEnd())) - Long.parseLong(String.valueOf(it.getStart()))) / 1000 * 1.0 / 3600));
+                    }else if (status==UserStatusEnum.SYSTEM_GIVEN){
+                        it.setAccumulatedTime(dft.format(  (long)it.getAccumulatedTime()/ 1000 * 1.0 / 3600));
                     }
                     if (it.getStart() != null) {
                         it.setStart(sdf.format(new Date((long) it.getStart())));
@@ -61,13 +62,6 @@ public class AttendanceRecordService {
                     if (it.getEnd() != null) {
                         it.setEnd(sdf.format(new Date((long) it.getEnd())));
                     }
-                    String status = "已签退";
-                    if ((int) it.getStatus() == 1) {
-                        status = "在线";
-                    } else if ((int) it.getStatus() == -1) {
-                        status = "被迫下线";
-                    }
-                    it.setStatus(status);
                 }
         );
         return recordDTOList;
@@ -77,7 +71,7 @@ public class AttendanceRecordService {
         User user = userService.getUserByUserId(userId);
         if (user == null)
             throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
-        AttendanceRecord record = recordMapper.selectByUserIdAndStatus(userId, 1);
+        AttendanceRecord record = recordMapper.selectByUserIdAndStatus(userId, UserStatusEnum.ONLINE.getStatus());
         RecordDTO recordDTO = new RecordDTO();
         if (record != null) {
             BeanUtils.copyProperties(record, recordDTO);
@@ -85,7 +79,7 @@ public class AttendanceRecordService {
             return recordDTO;
         } else {
             recordDTO.setUserId(user.getId());
-            recordDTO.setStatus(0);
+            recordDTO.setStatus(UserStatusEnum.OFFLINE);
             recordDTO.setUserName(user.getName());
             return recordDTO;
         }

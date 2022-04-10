@@ -35,7 +35,7 @@ public class BeanConfig {
         } catch (ParseException e) {
             e.printStackTrace();
         }
-        log.info("学期第一天获取失败，请检查配置文件是否配置attendance.week变量");
+        log.warn("学期第一天获取失败，请检查配置文件是否配置attendance.week变量");
         return new TimeHelper(1614556800000L); //2021 3 1
     }
 

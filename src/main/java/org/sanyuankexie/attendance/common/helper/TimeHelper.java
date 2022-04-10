@@ -1,11 +1,7 @@
 package org.sanyuankexie.attendance.common.helper;
 
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.stereotype.Component;
-
 import java.util.Arrays;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.TimeZone;
 
 
@@ -31,9 +27,6 @@ public class TimeHelper {
     Integer[] midnight={6,7};
 
     public boolean noAllSign(Long time){
-
-//        return  false;
-//        Date currentTime = new Date();
         Calendar calendar = Calendar.getInstance(TimeZone.getTimeZone("GMT+8"));
         int week=calendar.get(Calendar.DAY_OF_WEEK);
         calendar.set(Calendar.HOUR_OF_DAY, 6);
@@ -45,8 +38,13 @@ public class TimeHelper {
         calendar.set(Calendar.MINUTE, 30);
         long max = calendar.getTimeInMillis();
         if (Arrays.asList(midnight).contains(week)){
-        max+=1000*60*30;
+            max+=1000*60*30;
         }
         return  time<min||time>max;
+    }
+
+    public boolean noStart(Long time){
+
+        return DEFAULT_TIME>time;
     }
 }

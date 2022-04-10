@@ -114,7 +114,7 @@ class GctaAttendanceSystemApplicationTests {
 //        }
 
         try {
-            excelWriter = EasyExcel.write("E:\\work\\223.xlsx", RankExport.class).build();
+            excelWriter = EasyExcel.write("E:\\work\\"+trem+"新生总时长.xlsx", RankExport.class).build();
             WriteSheet newRank = EasyExcel.writerSheet("新人").build();
 //            WriteSheet oldRank=EasyExcel.writerSheet("老人").build();
             excelWriter.write(newWeekRank, newRank);
@@ -124,6 +124,7 @@ class GctaAttendanceSystemApplicationTests {
             if (excelWriter != null) {
                 excelWriter.finish();
             }
+
         }
     }
     @Autowired

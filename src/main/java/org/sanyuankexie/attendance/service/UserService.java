@@ -3,12 +3,13 @@ package org.sanyuankexie.attendance.service;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.read.listener.PageReadListener;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import org.sanyuankexie.attendance.advice.ExceptionControllerAdvice;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
+import org.sanyuankexie.attendance.common.DTO.UserStatusEnum;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
 import org.sanyuankexie.attendance.common.helper.TimeHelper;
 import org.sanyuankexie.attendance.mapper.AttendanceRankMapper;
+import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper;
 import org.sanyuankexie.attendance.mapper.UserInsertMapper;
 import org.sanyuankexie.attendance.mapper.UserMapper;
 import org.sanyuankexie.attendance.model.AttendanceRank;
@@ -17,17 +18,13 @@ import org.sanyuankexie.attendance.model.SystemInfo;
 import org.sanyuankexie.attendance.model.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.bind.annotation.RequestPart;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
-import javax.xml.crypto.Data;
 import java.io.IOException;
 import java.lang.reflect.Field;
-import java.sql.Time;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
@@ -48,6 +45,9 @@ public class UserService {
     @Resource
     private AttendanceRecordService recordService;
 
+    @Autowired
+    private AttendanceRecordMapper recordMapper;
+
     @Resource
     private UserMapper userMapper;
 
@@ -66,6 +66,9 @@ public class UserService {
         Long now = System.currentTimeMillis();
         if(timeHelper.noAllSign(now)){
             throw new ServiceException(CExceptionEnum.No_ALLOW_TIME, userId);
+        }
+        if (timeHelper.noStart(now)){
+            throw new ServiceException(CExceptionEnum.TERM_NO_START,userId);
         }
         User user = getUserByUserId(userId);
 
@@ -89,13 +92,12 @@ public class UserService {
         if (rank == null) {
             //id, userId, week, totalTime
             rank = new AttendanceRank(
-                    1,
+                    null,
                      userId,
                     timeHelper.getNowWeek(),
                     0L,systemInfo.getTerm()
 
             );
-            rank.setId(null);
             rankService.insert(rank);
         }
         //Judging if Online
@@ -108,7 +110,8 @@ public class UserService {
                     System.currentTimeMillis(),
                     null,
                     1,
-                    userId,systemInfo.getTerm()
+                    userId,systemInfo.getTerm(),
+                    null
             );
             recordService.insert(newRecord);
         } else {
@@ -180,34 +183,46 @@ public class UserService {
     @Transactional
     public RankDTO modifyTime(String operation, Long userId, String time, String token) {
         int week = timeHelper.getNowWeek();
-        if (!token.equals(systemInfo.getPassword())) return null;
+        if (!token.equals(systemInfo.getPassword())){
+            throw new ServiceException(CExceptionEnum.PASSWORD_INCORRECT);
+        }
         if (operation.equals("add")) {
 
             Long res = (long) (Double.parseDouble(time)* 60 * 60 * 1000);
             rankMapper.add(userId, week, res);
             RankDTO rankDTO = new RankDTO();
-            BeanUtils.copyProperties(rankService.selectByUserIdAndWeek(userId, week), rankDTO);
+            AttendanceRank attendanceRank = rankService.selectByUserIdAndWeek(userId, week);
+            if (attendanceRank!=null){
+                BeanUtils.copyProperties(rankService.selectByUserIdAndWeek(userId, week), rankDTO);
+            }else{
+                AttendanceRank iRank = new AttendanceRank(
+                        null,
+                        userId,
+                        timeHelper.getNowWeek(),
+                        res, systemInfo.getTerm()
+                );
+                rankService.insert(iRank);
+            }
+            //拆入说明
+            long l = System.currentTimeMillis();
+            AttendanceRecord attendanceRecord = new AttendanceRecord(l+""+userId,userId,l,null, UserStatusEnum.SYSTEM_GIVEN.getStatus(),5201314L,systemInfo.getTerm(),res);
+            recordMapper.insert(attendanceRecord);
             return rankDTO;
         }
         if (operation.equals("sub")) {
 
         }
         throw new ServiceException(CExceptionEnum.UNKNOWN, userId);
-//        return null;
     }
 
     public Map<String,Object> importUser(MultipartFile file,String password){
         Map<String,Object> map=new HashMap<>();
         if (!systemInfo.getPassword().equals(password)){
             map.put("result","密码不正确");
-
             return  map;
         }
         dataDao(file,map);
         return  map;
-
-
-
     }
 
 

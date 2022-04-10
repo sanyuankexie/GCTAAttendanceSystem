@@ -1,5 +1,7 @@
 package org.sanyuankexie.attendance.common.exception;
 
+
+
 public enum CExceptionEnum {
     UNKNOWN(-1, "Unknown exception"),
     USER_NO_EXIST(-200, "用户名不存在"),
@@ -11,7 +13,8 @@ public enum CExceptionEnum {
     No_ALLOW_TIME(-206, "该时段不允许签到"),
     PASSWORD_INCORRECT(-207, "密码错误"),
     DATE_ERR(-208,"周序不合理"),
-    WEEK_NO_END(-209,"本周未结束");
+    WEEK_NO_END(-209,"本周未结束"),
+    TERM_NO_START(-210,"本学期未开始");
 //    WEEK_NO_END(-209,"本周未结束");
 
     private Integer code;

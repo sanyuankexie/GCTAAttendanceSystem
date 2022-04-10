@@ -31,6 +31,6 @@ public class UserServiceTest {
 
     @Test
     public void complaint() {
-        System.out.println(1/2);
+
     }
 }

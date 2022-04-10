@@ -1,0 +1,76 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration debug="false">
+    <property name="pattern" value="${FILE_LOG_PATTERN:-%d{${LOG_DATEFORMAT_PATTERN:-yyyy-MM-dd HH:mm:ss.SSS}} ${LOG_LEVEL_PATTERN:-%5p} ${PID:- } --- [%t] %-40.40logger{39} : %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}}"/>
+
+<!--    <property name="pattern" value="%d{yyyy-MM-dd HH:mm:ss.SSS} %-5level [%15.15t] %c %M : %m%n"/>-->
+    <include resource="org/springframework/boot/logging/logback/base.xml"/>
+
+    <springProfile name="prod">
+        <!-- 当 "生产" 环境时，该配置激活-->
+        <springProperty scope="context" name="LOG_HOME" source="attendance.path"/>
+    </springProfile>
+    <springProfile name="!prod">
+        <property name="LOG_HOME" value="./logs"/>
+    </springProfile>
+
+
+    <appender name="mail_file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--日志文件保存路径-->
+        <file>${LOG_HOME}/mail.log</file>
+        <!--日志消息格式配置-->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--按照时间和压缩格式声明拆分的文件名-->
+            <fileNamePattern>${LOG_HOME}/mail/%d{yyyy-MM}.log%i.gz</fileNamePattern>
+            <!--按照文件大小拆分-->
+            <maxFileSize>1MB</maxFileSize>
+            <maxHistory>60</maxHistory>
+        </rollingPolicy>
+    </appender>
+    <appender name="system_file" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <!--日志文件保存路径-->
+        <file>${LOG_HOME}/system.log</file>
+        <!--日志消息格式配置-->
+        <encoder class="ch.qos.logback.classic.encoder.PatternLayoutEncoder">
+            <pattern>${pattern}</pattern>
+        </encoder>
+        <rollingPolicy class="ch.qos.logback.core.rolling.SizeAndTimeBasedRollingPolicy">
+            <!--按照时间和压缩格式声明拆分的文件名-->
+            <fileNamePattern>${LOG_HOME}/system/%d{yyyy-MM-dd}%i.log.gz</fileNamePattern>
+            <!--按照文件大小拆分-->
+            <maxFileSize>1MB</maxFileSize>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+    </appender>
+    <appender name="console" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${pattern}</pattern>
+        </encoder>
+    </appender>
+    <logger name="org.sanyuankexie.attendance.service" level="info">
+        <springProfile name="prod">
+            <!-- 当 "生产" 环境时，该配置激活-->
+            <appender-ref ref="system_file"/>
+        </springProfile>
+    </logger>
+    <logger name="org.sanyuankexie.attendance.common.job.AutoSignOutJob" level="info">
+        <springProfile name="prod">
+            <!-- 当 "生产" 环境时，该配置激活-->
+            <appender-ref ref="mail_file"/>
+        </springProfile>
+    </logger>
+    <logger name="org.sanyuankexie.attendance.advice.ExceptionControllerAdvice" level="info" >
+        <springProfile name="prod">
+            <!-- 当 "生产" 环境时，该配置激活-->
+            <appender-ref ref="system_file"/>
+        </springProfile>
+    </logger>
+    <logger name="org.sanyuankexie.attendance.common.job" level="info">
+        <springProfile name="prod">
+            <!-- 当 "生产" 环境时，该配置激活-->
+            <appender-ref ref="system_file"/>
+        </springProfile>
+    </logger>
+</configuration>

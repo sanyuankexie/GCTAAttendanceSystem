@@ -21,15 +21,18 @@ spring:
       min-idle: 5
       max-active: 20
 #      max-wait:
+  profiles:
+    active: dev   #dev prod test  打包记得开启prod生产模式，这样子才有日志保存
 
 mybatis-plus:
   configuration:
     map-underscore-to-camel-case: true
-#    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #mybatis日志
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl #mybatis日志
   mapper-locations: classpath:mapper/*.xml
 
 
 attendance:
-  term: '2021_2022_1'  #学期 1 2表示上下学期
-  week: '2021-9-6'  #第一周星期一
+  term: '2021_2022_2'  #学期 1 2表示上下学期
+  week: '2022-2-21'  #第一周星期一
   leve: 21
+  path: /www/wwwroot/kexieattend

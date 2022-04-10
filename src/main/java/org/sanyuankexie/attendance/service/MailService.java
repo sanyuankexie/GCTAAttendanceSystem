@@ -1,18 +1,14 @@
 package org.sanyuankexie.attendance.service;
 
 
-import com.therainisme.AmeBox.logUtil.LogFactory;
-import com.therainisme.AmeBox.logUtil.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.sanyuankexie.attendance.model.User;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.mail.javamail.JavaMailSender;
-import org.springframework.mail.javamail.JavaMailSenderImpl;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
-import javax.annotation.Resource;
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.text.SimpleDateFormat;
@@ -21,8 +17,9 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 @Service
+@Slf4j
 public class MailService {
-    Logger logger = LogFactory.getLogger(this);
+//    Logger logger = LogFactory.getLogger(this);
 
     private final UserService userService;
 
@@ -80,7 +77,7 @@ public class MailService {
 
             javaMailSender.send(messageHelper.getMimeMessage());
         } catch (MessagingException e) {
-            logger.error(false, "发送<" + userId + ">的邮件失败");
+            log.error("发送<{}>的邮件失败",userId);
         }
     }
 }

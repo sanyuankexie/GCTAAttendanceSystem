@@ -14,16 +14,15 @@ import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper;
 import org.sanyuankexie.attendance.model.AttendanceRank;
 import org.sanyuankexie.attendance.model.RankExport;
 import org.sanyuankexie.attendance.model.SystemInfo;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import org.springframework.util.StringUtils;
 
-import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -47,7 +46,6 @@ public class AttendanceRankService {
         this.attendanceRankMapper = attendanceRankMapper;
         this.objectMapper = objectMapper;
     }
-
     public List<RankDTO> getTopFive() {
         List<RankDTO> rankDTOList = rankMapper.getTopFive(timeHelper.getNowWeek(), systemInfo.getLeve()*100000000L, (systemInfo.getLeve()+1)*100000000L, systemInfo.getTerm(),
                 StringUtil.join(systemInfo.getIsLeve(), ","));

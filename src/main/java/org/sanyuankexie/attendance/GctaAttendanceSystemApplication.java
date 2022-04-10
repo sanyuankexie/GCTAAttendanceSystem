@@ -11,7 +11,6 @@ import org.springframework.transaction.annotation.EnableTransactionManagement;
 @EnableScheduling
 @EnableTransactionManagement
 public class GctaAttendanceSystemApplication {
-
     public static void main(String[] args) {
         SpringApplication.run(GctaAttendanceSystemApplication.class, args);
     }

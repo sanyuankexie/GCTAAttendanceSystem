@@ -8,7 +8,6 @@ import org.sanyuankexie.attendance.common.aspect.annotation.ConvertTime;
 import org.sanyuankexie.attendance.common.helper.ResultHelper;
 import org.sanyuankexie.attendance.service.AttendanceRankService;
 import org.sanyuankexie.attendance.service.AttendanceRecordService;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;

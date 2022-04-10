@@ -1,7 +1,6 @@
 package org.sanyuankexie.attendance.common.job;
 
-import com.therainisme.AmeBox.logUtil.LogFactory;
-import com.therainisme.AmeBox.logUtil.Logger;
+import lombok.extern.slf4j.Slf4j;
 import org.sanyuankexie.attendance.common.DTO.RecordDTO;
 import org.sanyuankexie.attendance.service.AttendanceRankService;
 import org.sanyuankexie.attendance.service.MailService;
@@ -14,8 +13,9 @@ import java.util.List;
 
 
 @Service
+@Slf4j
 public class AutoSignOutJob {
-    Logger logger = LogFactory.getLogger(this);
+//    Logger logger = LogFactory.getLogger(this);
 
     @Resource
     private UserService userService;
@@ -35,11 +35,11 @@ public class AutoSignOutJob {
         executeInternal();
     }
     public void executeInternal() {
-        logger.log(true, "<System>开始自动签退");
+        log.info("<System>开始自动签退");
 
         List<RecordDTO> onlineUsers = attendanceRankService.getOnlineUserList();
         if (onlineUsers.isEmpty()) {
-            logger.log(true, "<System>当前无在线学生");
+            log.info("<System>当前无在线学生");
             return;
         }
         Long target = 5201314L;
@@ -48,11 +48,11 @@ public class AutoSignOutJob {
                 target = onlineUser.getUserId();
                 userService.helpSignOut(target);
                 mailService.sendMailByUserId(target, "AutoSignOut.html", "[科协签到]: 晚间签退通知");
-                logger.log(true, "<System><" + target + ">已自动签退");
+                log.info("<System><{}>已自动签退", target );
             } catch (Exception e) {
-                logger.log(false, "<System><" + target + ">自动签退时发生了一些错误");
+                log.error( "<System><{}>自动签退时发生了一些错误",target);
             }
         }
-        logger.log("<System>当前剩余人数" + attendanceRankService.getOnlineUserList().size());
+        log.info("<System>当前剩余人数:{}",attendanceRankService.getOnlineUserList().size());
     }
 }
