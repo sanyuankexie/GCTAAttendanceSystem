@@ -22,7 +22,7 @@ spring:
       max-active: 20
 #      max-wait:
   profiles:
-    active: dev   #dev prod test  打包记得开启prod生产模式，这样子才有日志保存
+    active: prod   #dev prod test  打包记得开启prod生产模式，这样子才有日志保存
 
 mybatis-plus:
   configuration:
