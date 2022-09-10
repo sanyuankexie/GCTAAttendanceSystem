@@ -47,8 +47,8 @@ public class AttendanceRankService {
         this.objectMapper = objectMapper;
     }
     public List<RankDTO> getTopFive() {
-        List<RankDTO> rankDTOList = rankMapper.getTopFive(timeHelper.getNowWeek(), systemInfo.getLeve()*100000000L, (systemInfo.getLeve()+1)*100000000L, systemInfo.getTerm(),
-                StringUtil.join(systemInfo.getIsLeve(), ","));
+        List<RankDTO> rankDTOList = rankMapper.getTopFive(timeHelper.getNowWeek(),  systemInfo.getTerm(),
+                systemInfo.getGrade());
         if (rankDTOList == null) return null;
         List<RankDTO> resList = new ArrayList<>();
         AtomicInteger timesOfValid = new AtomicInteger(); //20级占用老板的的人数
@@ -64,7 +64,7 @@ public class AttendanceRankService {
 
     public List<RankDTO> getTopFiveOfOldMan() {
 
-        return rankMapper.getTopOldFive(timeHelper.getNowWeek(), 0L, systemInfo.getLeve()*100000000L,systemInfo.getTerm(),StringUtil.join( systemInfo.getIsLeve(),","));
+        return rankMapper.getTopOldFive(timeHelper.getNowWeek(), systemInfo.getTerm(), systemInfo.getGrade());
     }
 
     public AttendanceRank selectByUserIdAndWeek(Long userId, int week) {
@@ -97,18 +97,11 @@ public class AttendanceRankService {
             return;
         }
         int nowWeek = timeHelper.getNowWeek();
+//        System.out.println(nowWeek);
+        boolean thisWeek= week == 0 || week == nowWeek;
 
-        if (week==0||week==nowWeek){
-            resp.setHeader("Content-Type","application/json");
-            Map<String,Object> map=new HashMap<>();
-            map.put("code",CExceptionEnum.WEEK_NO_END.getCode());
-            map.put("msg",CExceptionEnum. WEEK_NO_END.getMsg());
-            objectMapper.writeValue(resp.getOutputStream(),map);
-            return;
-        }
-
-        nowWeek=week<0?week+nowWeek:week;
-        if (systemInfo.getTerm().equals(trem)&&(nowWeek>= timeHelper.getNowWeek()||nowWeek<=0)){
+        nowWeek=week<=0?week+nowWeek:week;
+        if (systemInfo.getTerm().equals(trem)&&(nowWeek> timeHelper.getNowWeek()||nowWeek<=0)){
             //日期异常
             resp.setHeader("Content-Type","application/json");
             Map<String,Object> map=new HashMap<>();
@@ -118,17 +111,17 @@ public class AttendanceRankService {
             return;
         }
         List<RankExport> newWeekRank = attendanceRankMapper.getNewWeekRank(systemInfo.getTerm(), String.valueOf(nowWeek),
-                systemInfo.getLeve() * 100000000L, StringUtil.join(systemInfo.getIsLeve(), ","));
+                systemInfo.getGrade());
         List<RankExport> oldWeekRank = attendanceRankMapper.getOldWeekRank(systemInfo.getTerm(), String.valueOf(nowWeek),
-                systemInfo.getLeve() * 100000000L, StringUtil.join(systemInfo.getIsLeve(), ","));
+                systemInfo.getGrade());
         ExcelWriter excelWriter = null;
         String[] t = trem.split("_");
         String lable =t[0]+"-"+t[1]+("1".equals(t[2])?"上学期":"下学期");
         resp.setHeader("Content-Disposition", "attachment;filename=" +  URLEncoder.encode(lable+"第"+nowWeek+"周" + ".xlsx","UTF-8"));
         try {
             excelWriter = EasyExcel.write(resp.getOutputStream(), RankExport.class).build();
-            WriteSheet newRank = EasyExcel.writerSheet("新人").build();
-            WriteSheet oldRank=EasyExcel.writerSheet("老人").build();
+            WriteSheet newRank = EasyExcel.writerSheet(thisWeek?"新人(本周未截止)":"新人").build();
+            WriteSheet oldRank=EasyExcel.writerSheet(thisWeek?"老人(本周未截止)":"老人").build();
             excelWriter.write(newWeekRank, newRank);
             excelWriter.write(oldWeekRank,oldRank);
         } catch (IOException e) {

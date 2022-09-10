@@ -10,10 +10,8 @@ import org.springframework.stereotype.Component;
 @Data
 public class SystemInfo {
 
-    //
     String week;
     String term;
-    int leve;
+    int grade;
     String password;
-    String[] isLeve;
 }

@@ -29,20 +29,20 @@ public interface AttendanceRankMapper {
             "u.name user_name, u.dept user_dept, u.location user_location " +
             "FROM attendance_rank r " +
             "LEFT JOIN user u ON u.id=r.user_id " +
-            "WHERE week=#{week} and term=#{term} and ( (r.user_id<#{lessThan} and r.user_id>#{moreThan}  ) or r.user_id in (#{isLeve}) )" +
+            "WHERE week=#{week} and term=#{term} and u.grade=#{grade}  " +
             "ORDER BY r.total_time DESC " +
             "LIMIT 0, 10")
-    List<RankDTO> getTopFive(@Param("week") int week, @Param("moreThan") Long moreThan, @Param("lessThan") Long lessThan,@Param("term") String term,@Param("isLeve") String isLeve);
+    List<RankDTO> getTopFive(@Param("week") int week, @Param("term") String term,@Param("grade") int grade);
 
     @Select("SELECT " +
             "r.user_id, r.total_time, r.week, " +
             "u.name user_name, u.dept user_dept, u.location user_location " +
             "FROM attendance_rank r " +
             "LEFT JOIN user u ON u.id=r.user_id " +
-            "WHERE week=#{week} and term=#{term} and ( (r.user_id<#{lessThan} and r.user_id>#{moreThan}  ) and r.user_id not in (#{isLeve}) )" +
+            "WHERE week=#{week} and term=#{term} and u.grade<#{grade} " +
             "ORDER BY r.total_time DESC " +
             "LIMIT 0, 10")
-    List<RankDTO> getTopOldFive(@Param("week") int week, @Param("moreThan") Long moreThan, @Param("lessThan") Long lessThan,@Param("term") String term,@Param("isLeve") String isLeve);
+    List<RankDTO> getTopOldFive(@Param("week") int week,@Param("term") String term,@Param("grade") int grade);
 
 
 
@@ -60,19 +60,19 @@ public interface AttendanceRankMapper {
                 @Param("week") Integer week,
                 @Param("time") Long time);
     @Select("SELECT id ,name ,dept, round(total_time/1000/60/60,2) as total_time,week from user as u" +
-            " left JOIN (SELECT user_id,term,total_time,week FROM attendance_rank where week=#{week} and term=#{term}) as r on r.user_id=u.id where  u.id > #{lessThan} or u.id in (#{isLeve}) " +
+            " left JOIN (SELECT user_id,term,total_time,week FROM attendance_rank where week=#{week} and term=#{term}) as r on r.user_id=u.id where  u.grade=#{grade} " +
             "ORDER BY total_time DESC")
-    List<RankExport> getNewWeekRank(@Param("term") String term, @Param("week") String week, @Param("lessThan")Long lessThan, @Param("isLeve")String isLeve);
+    List<RankExport> getNewWeekRank(@Param("term") String term, @Param("week") String week, @Param("grade")int grade);
     @Select("SELECT id ,name ,dept, round(total_time/1000/60/60,2) as total_time,week from user as u" +
-            " left JOIN (SELECT user_id,term,total_time,week FROM attendance_rank where week=#{week} and term=#{term}) as r on r.user_id=u.id where  not (u.id > #{lessThan} or u.id in (#{isLeve})) " +
+            " left JOIN (SELECT user_id,term,total_time,week FROM attendance_rank where week=#{week} and term=#{term}) as r on r.user_id=u.id where  u.grade<#{grade} " +
             "ORDER BY total_time DESC")
-    List<RankExport> getOldWeekRank(@Param("term") String term, @Param("week") String week, @Param("lessThan")Long lessThan, @Param("isLeve")String isLeve);
+    List<RankExport> getOldWeekRank(@Param("term") String term, @Param("week") String week,@Param("grade")int grade);
 
 
 
     //新生学期总时常
     @Select("SELECT id ,name ,dept, round(sum(total_time)/1000/60,2) as total_time from user as u" +
-            " left JOIN (SELECT user_id,term,total_time FROM attendance_rank where term=#{term}) as r on r.user_id=u.id where  u.id > #{lessThan} or u.id in (#{isLeve}) " +
+            " left JOIN (SELECT user_id,term,total_time FROM attendance_rank where term=#{term}) as r on r.user_id=u.id where  u.grade=#{grade} " +
             "  group by id ORDER BY total_time DESC")
-    List<RankExport> getAllNewWeekRanMine(@Param("term") String term, @Param("lessThan")Long lessThan, @Param("isLeve")String isLeve);
+    List<RankExport> getAllNewWeekRanMine(@Param("term") String term, @Param("grade")int grade);
 }

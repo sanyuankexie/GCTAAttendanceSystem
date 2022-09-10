@@ -91,7 +91,7 @@ class GctaAttendanceSystemApplicationTests {
 //            return;
 //        }
         List<RankExport> newWeekRank = attendanceRankMapper.getAllNewWeekRanMine(systemInfo.getTerm(),
-                systemInfo.getLeve() * 100000000L, StringUtil.join(systemInfo.getIsLeve(), ","));
+                systemInfo.getGrade());
 //        List<RankExport> oldWeekRank = attendanceRankMapper.getOldWeekRank(systemInfo.getTerm(), String.valueOf(nowWeek),
 //                systemInfo.getLeve() * 100000000L, StringUtil.join(systemInfo.getIsLeve(), ","));
         ExcelWriter excelWriter = null;
@@ -133,13 +133,14 @@ class GctaAttendanceSystemApplicationTests {
 //    void sout(){
 //        autoSignOutJob.executeInternal();
 //    }
+    //获取
     @Test
     void getNewRank() throws FileNotFoundException {
 
         List<RankExport> newWeekRank = attendanceRankMapper.getNewWeekRank(systemInfo.getTerm(), String.valueOf(timeHelper.getNowWeek()),
-                systemInfo.getLeve() * 100000000L, StringUtil.join(systemInfo.getIsLeve(), ","));
+                systemInfo.getGrade());
         List<RankExport> oldWeekRank = attendanceRankMapper.getOldWeekRank(systemInfo.getTerm(), String.valueOf(timeHelper.getNowWeek()),
-                systemInfo.getLeve() * 100000000L, StringUtil.join(systemInfo.getIsLeve(), ","));
+                systemInfo.getGrade());
         ExcelWriter excelWriter = null;
         try {
             excelWriter = EasyExcel.write("E:\\work\\223.xlsx", RankExport.class).build();

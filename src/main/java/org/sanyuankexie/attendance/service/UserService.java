@@ -266,6 +266,7 @@ public class UserService {
                         continue;
                     }
 
+
                     QueryWrapper<User> userQueryWrapper=new QueryWrapper<>();
 
                     userQueryWrapper.eq("id",demoData.getId());

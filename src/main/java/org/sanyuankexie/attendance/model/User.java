@@ -18,5 +18,6 @@ public class User {
     private String email;
     @ExcelProperty("github")
     private   String githubId;
-
+    @ExcelProperty("年级(例如：22级填22)")
+    private String grade;
 }
