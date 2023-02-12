@@ -2,7 +2,7 @@ server:
   port: 8088
 spring:
   profiles:
-    active: dev   #dev prod test  打包记得开启prod生产模式，这样子才有日志保存
+    active: prod   #dev prod test  打包记得开启prod生产模式，这样子才有日志保存
   mvc:
     view:
       prefix: classpath:/templates/
@@ -33,7 +33,7 @@ mybatis-plus:
 
 
 attendance:
-  term: '2022_2023_1'  #学期 1 2表示上下学期
-  week: '2022-9-5'  #第一周星期一
+  term: '2022_2023_2'  #学期 1 2表示上下学期
+  week: '2022-2-13'  #第一周星期一
   grade: 22
   path: /www/wwwroot/kexieattend

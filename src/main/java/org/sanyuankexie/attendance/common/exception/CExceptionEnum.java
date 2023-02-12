@@ -14,8 +14,10 @@ public enum CExceptionEnum {
     PASSWORD_INCORRECT(-207, "密码错误"),
     DATE_ERR(-208,"周序不合理"),
     WEEK_NO_END(-209,"本周未结束"),
-    TERM_NO_START(-210,"本学期未开始");
-//    WEEK_NO_END(-209,"本周未结束");
+    TERM_NO_START(-210,"本学期未开始"),
+    //未实现
+    USER_LEAVE(-211,"宁已离开科协,请联系管理员");
+    //    WEEK_NO_END(-209,"本周未结束");
 
     private Integer code;
     private String msg;

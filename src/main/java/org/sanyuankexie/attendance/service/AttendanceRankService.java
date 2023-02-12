@@ -19,10 +19,7 @@ import org.springframework.stereotype.Service;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.net.URLEncoder;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 @Service
@@ -80,7 +77,10 @@ public class AttendanceRankService {
     }
 
     public List<RecordDTO> getOnlineUserList() {
-        return recordMapper.selectOnlineRecord();
+
+        List<RecordDTO> list = recordMapper.selectOnlineRecord();
+        Collections.shuffle(list);
+        return  list;
     }
 
 
@@ -114,10 +114,11 @@ public class AttendanceRankService {
                 systemInfo.getGrade());
         List<RankExport> oldWeekRank = attendanceRankMapper.getOldWeekRank(systemInfo.getTerm(), String.valueOf(nowWeek),
                 systemInfo.getGrade());
-        ExcelWriter excelWriter = null;
+
         String[] t = trem.split("_");
         String lable =t[0]+"-"+t[1]+("1".equals(t[2])?"上学期":"下学期");
         resp.setHeader("Content-Disposition", "attachment;filename=" +  URLEncoder.encode(lable+"第"+nowWeek+"周" + ".xlsx","UTF-8"));
+        ExcelWriter excelWriter = null;
         try {
             excelWriter = EasyExcel.write(resp.getOutputStream(), RankExport.class).build();
             WriteSheet newRank = EasyExcel.writerSheet(thisWeek?"新人(本周未截止)":"新人").build();

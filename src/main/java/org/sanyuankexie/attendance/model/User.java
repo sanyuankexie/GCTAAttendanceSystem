@@ -2,6 +2,7 @@ package org.sanyuankexie.attendance.model;
 
 
 import com.alibaba.excel.annotation.ExcelProperty;
+import com.baomidou.mybatisplus.annotation.TableLogic;
 import lombok.Data;
 
 @Data
