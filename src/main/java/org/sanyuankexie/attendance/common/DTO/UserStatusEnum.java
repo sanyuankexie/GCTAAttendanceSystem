@@ -1,15 +1,9 @@
 package org.sanyuankexie.attendance.common.DTO;
 
 
-
 import com.baomidou.mybatisplus.annotation.EnumValue;
-import com.baomidou.mybatisplus.annotation.TableField;
 import com.fasterxml.jackson.annotation.JsonValue;
 import lombok.Getter;
-import org.apache.ibatis.type.JdbcType;
-import org.sanyuankexie.attendance.common.handler.UserStatusHandler;
-
-import java.util.Arrays;
 
 @Getter
 public enum UserStatusEnum {

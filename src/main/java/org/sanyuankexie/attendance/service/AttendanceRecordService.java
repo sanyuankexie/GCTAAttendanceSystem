@@ -1,6 +1,7 @@
 package org.sanyuankexie.attendance.service;
 
 import org.sanyuankexie.attendance.common.DTO.RecordDTO;
+import org.sanyuankexie.attendance.common.DTO.UserStatusDTO;
 import org.sanyuankexie.attendance.common.DTO.UserStatusEnum;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
@@ -85,8 +86,22 @@ public class AttendanceRecordService {
         }
     }
 
-    public boolean isOnlineByUserId(Long userId) {
-        return getOnlineRecordByUserId(userId) != null;
+    public UserStatusDTO isOnlineByUserId(Long userId) {
+        User user = userService.getUserByUserId(userId);
+        if (user == null)
+            throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
+        AttendanceRecord record = recordMapper.selectByUserIdAndStatus(userId, UserStatusEnum.ONLINE.getStatus());
+        UserStatusDTO userStatusDTO = new UserStatusDTO();
+        if (record != null) {
+            BeanUtils.copyProperties(record, userStatusDTO);
+            userStatusDTO.setUserName(user.getName());
+            return userStatusDTO;
+        } else {
+            userStatusDTO.setUserId(user.getId());
+            userStatusDTO.setStatus(UserStatusEnum.OFFLINE.getStatus());
+            userStatusDTO.setUserName(user.getName());
+            return userStatusDTO;
+        }
     }
 
     public void insert(AttendanceRecord record) {

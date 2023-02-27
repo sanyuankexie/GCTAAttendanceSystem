@@ -3,6 +3,7 @@ package org.sanyuankexie.attendance.controller;
 import org.apache.ibatis.annotations.Param;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.DTO.RecordDTO;
+import org.sanyuankexie.attendance.common.DTO.UserStatusDTO;
 import org.sanyuankexie.attendance.common.api.ResultVO;
 import org.sanyuankexie.attendance.common.aspect.annotation.ConvertTime;
 import org.sanyuankexie.attendance.common.helper.ResultHelper;
@@ -53,8 +54,8 @@ public class RecordController {
 
     @ConvertTime
     @GetMapping("/online/{userId}")
-    public ResultVO<RecordDTO> isOnline(@PathVariable Long userId) {
-        return ResultHelper.success(recordService.getUserStatus(userId), "成功获取用户在线状态");
+    public ResultVO<UserStatusDTO> isOnline(@PathVariable Long userId) {
+        return ResultHelper.success(recordService.isOnlineByUserId(userId), "成功获取用户在线状态");
     }
     @GetMapping("/time/{userId}")
     public ResultVO<RecordDTO> getTime(@PathVariable Long userId){
