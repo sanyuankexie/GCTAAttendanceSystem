@@ -59,6 +59,15 @@ public interface AttendanceRankMapper {
     RankDTO add(@Param("userId") Long userId,
                 @Param("week") Integer week,
                 @Param("time") Long time);
+    @Select("UPDATE attendance_rank SET total_time=total_time-#{time} WHERE user_id=#{userId} and week=#{week}")
+    RankDTO sub(@Param("userId") Long userId,
+                @Param("week") Integer week,
+                @Param("time") Long time);
+    @Select("UPDATE attendance_rank SET total_time=#{time} WHERE user_id=#{userId} and week=#{week}")
+    RankDTO set(@Param("userId") Long userId,
+                @Param("week") Integer week,
+                @Param("time") Long time);
+
     @Select("SELECT id ,name ,dept, round(total_time/1000/60/60,2) as total_time,week from user as u" +
             " left JOIN (SELECT user_id,term,total_time,week FROM attendance_rank where week=#{week} and term=#{term}) as r on r.user_id=u.id where  u.grade=#{grade} " +
             "ORDER BY total_time DESC")

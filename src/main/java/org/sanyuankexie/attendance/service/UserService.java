@@ -186,33 +186,43 @@ public class UserService {
         if (!token.equals(systemInfo.getPassword())){
             throw new ServiceException(CExceptionEnum.PASSWORD_INCORRECT);
         }
-        if (operation.equals("add")) {
-
-            Long res = (long) (Double.parseDouble(time)* 60 * 60 * 1000);
-            rankMapper.add(userId, week, res);
-            RankDTO rankDTO = new RankDTO();
-            AttendanceRank attendanceRank = rankService.selectByUserIdAndWeek(userId, week);
-            if (attendanceRank!=null){
-                BeanUtils.copyProperties(rankService.selectByUserIdAndWeek(userId, week), rankDTO);
-            }else{
-                AttendanceRank iRank = new AttendanceRank(
-                        null,
-                        userId,
-                        timeHelper.getNowWeek(),
-                        res, systemInfo.getTerm()
-                );
-                rankService.insert(iRank);
-            }
-            //拆入说明
-            long l = System.currentTimeMillis();
-            AttendanceRecord attendanceRecord = new AttendanceRecord(l+""+userId,userId,l,null, UserStatusEnum.SYSTEM_GIVEN.getStatus(),5201314L,systemInfo.getTerm(),res);
-            recordMapper.insert(attendanceRecord);
-            return rankDTO;
+        int status;
+        long res = (long) (Double.parseDouble(time) * 60 * 60 * 1000);;
+        switch (operation) {
+            case "add":
+                rankMapper.add(userId, week, res);
+                status = UserStatusEnum.SYSTEM_GIVEN.getStatus();
+                break;
+            case "sub":
+                rankMapper.sub(userId, week, res);
+                status = UserStatusEnum.SYSTEM_TAKEN.getStatus();
+                break;
+            case "set": // 忘记签到的人太多辣，直接设成18h X)
+                rankMapper.set(userId, week, res);
+                status = UserStatusEnum.SYSTEM_GIVEN.getStatus();
+                break;
+            default:
+                throw new ServiceException(CExceptionEnum.UNKNOWN, userId);
         }
-        if (operation.equals("sub")) {
-
+        RankDTO rankDTO = new RankDTO();
+        AttendanceRank attendanceRank = rankService.selectByUserIdAndWeek(userId, week);
+        if (attendanceRank!=null){
+            BeanUtils.copyProperties(attendanceRank, rankDTO);
+        }else{
+            AttendanceRank iRank = new AttendanceRank(
+                    null,
+                    userId,
+                    timeHelper.getNowWeek(),
+                    res, systemInfo.getTerm()
+            );
+            rankService.insert(iRank);
         }
-        throw new ServiceException(CExceptionEnum.UNKNOWN, userId);
+        //拆入说明
+        long l = System.currentTimeMillis();
+        AttendanceRecord attendanceRecord = new AttendanceRecord(l+""+userId,userId,l,null, status,
+                5201314L,systemInfo.getTerm(),res);
+        recordMapper.insert(attendanceRecord);
+        return rankDTO;
     }
 
     public Map<String,Object> importUser(MultipartFile file,String password){
