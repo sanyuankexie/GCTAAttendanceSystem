@@ -110,9 +110,9 @@ public class AttendanceRankService {
             objectMapper.writeValue(resp.getOutputStream(),map);
             return;
         }
-        List<RankExport> newWeekRank = attendanceRankMapper.getNewWeekRank(systemInfo.getTerm(), String.valueOf(nowWeek),
+        List<RankExport> newWeekRank = attendanceRankMapper.getNewWeekRank(trem, String.valueOf(nowWeek),
                 systemInfo.getGrade());
-        List<RankExport> oldWeekRank = attendanceRankMapper.getOldWeekRank(systemInfo.getTerm(), String.valueOf(nowWeek),
+        List<RankExport> oldWeekRank = attendanceRankMapper.getOldWeekRank(trem, String.valueOf(nowWeek),
                 systemInfo.getGrade());
 
         String[] t = trem.split("_");

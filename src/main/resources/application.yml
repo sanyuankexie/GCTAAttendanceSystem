@@ -34,6 +34,6 @@ mybatis-plus:
 
 attendance:
   term: '2022_2023_2'  #学期 1 2表示上下学期
-  week: '2022-2-13'  #第一周星期一
+  week: '2023-2-13'  #第一周星期一
   grade: 22
-  path: /www/wwwroot/kexieattend
+  path: /root/logs
