@@ -17,6 +17,7 @@ import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.List;
+import java.util.TimeZone;
 
 @Service
 public class AttendanceRecordService {
@@ -48,6 +49,7 @@ public class AttendanceRecordService {
         if (userService.getUserByUserId(userId) == null)
             throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         List<RecordDTO> recordDTOList = recordMapper.selectRecordListByUserId(userId,term);
         recordDTOList.forEach(
                 it -> {

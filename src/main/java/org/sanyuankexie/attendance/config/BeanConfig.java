@@ -13,6 +13,7 @@ import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 
 @Configuration
 @Slf4j
@@ -28,6 +29,7 @@ public class BeanConfig {
     @Bean
     public TimeHelper getTimerHelper(){
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         try {
             Date w0 = simpleDateFormat.parse(systemInfo.getWeek());
 

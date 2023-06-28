@@ -17,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.TimeZone;
 
 
 @Component
@@ -96,6 +97,8 @@ public class ConvertTimeAspect {
     }
 
     public String getTime(long timestamp) {
-        return new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(timestamp));
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+        return sdf.format(new Date(timestamp));
     }
 }

@@ -13,6 +13,7 @@ import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.TimeZone;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -44,9 +45,14 @@ public class MailService {
             return;
         }
         //这里是搜索用户信息然后替换的
+        SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+        sdf.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
+
         context.setVariable("userId", user.getId()); //学号
         context.setVariable("userName", user.getName()); // 姓名
-        context.setVariable("nowDate", new SimpleDateFormat("yyyy-MM-dd").format(new Date()));
+        context.setVariable("nowDate", sdf.format(new Date()));
+
+
 
 
         String toMail = user.getEmail();
