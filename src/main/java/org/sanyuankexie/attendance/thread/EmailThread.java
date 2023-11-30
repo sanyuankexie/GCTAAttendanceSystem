@@ -1,17 +1,14 @@
-package org.sanyuankexie.attendance.model.thread;
+package org.sanyuankexie.attendance.thread;
 
 import lombok.AllArgsConstructor;
 import org.sanyuankexie.attendance.service.MailService;
-import org.springframework.stereotype.Component;
-
-import javax.annotation.Resource;
 
 @AllArgsConstructor
 public class EmailThread implements Runnable{
+    private MailService mailService;
     private Long userId;
     private String mailTemplateName;
     private String titleName;
-    private MailService mailService;
 
     @Override
     public void run() {

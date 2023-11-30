@@ -16,8 +16,11 @@ import org.sanyuankexie.attendance.model.AttendanceRank;
 import org.sanyuankexie.attendance.model.AttendanceRecord;
 import org.sanyuankexie.attendance.model.SystemInfo;
 import org.sanyuankexie.attendance.model.User;
+import org.sanyuankexie.attendance.thread.EmailThread;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.core.task.TaskExecutor;
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
@@ -32,6 +35,9 @@ import java.util.regex.Pattern;
 @Service
 public class UserService {
     private static final ConcurrentHashMap<Long, Long> defenderMap = new ConcurrentHashMap<>();
+
+    @Resource
+    ThreadPoolTaskExecutor threadPoolTaskExecutor;
 
     @Resource
     private MailService mailService;
@@ -159,7 +165,7 @@ public class UserService {
             onlineRecord.setEnd(System.currentTimeMillis());
             onlineRecord.setOperatorId(operatorUserId);
             recordService.updateById(onlineRecord);
-            mailService.sendMailByUserId(targetUserId, "complaint.html", "[科协签到]: 举报下线通知");
+            threadPoolTaskExecutor.execute(new EmailThread(mailService, targetUserId, "complaint.html", "[科协签到]: 举报下线通知"));
         } else {
             throw new ServiceException(CExceptionEnum.USER_C_OFFLINE, targetUserId);
         }
