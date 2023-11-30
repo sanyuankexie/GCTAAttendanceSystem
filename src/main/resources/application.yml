@@ -33,7 +33,7 @@ mybatis-plus:
 
 
 attendance:
-  term: '2022_2023_2'  #学期 1 2表示上下学期
-  week: '2023-2-13'  #第一周星期一
-  grade: 22
+  term: '2023_2024_1'  #学期 1 2表示上下学期
+  week: '2023-9-4'  #第一周星期一
+  grade: 23
   path: ./logs
