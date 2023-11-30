@@ -265,7 +265,8 @@ public class UserService {
                         continue;
 
                     }
-                    String[] location={"5109","5102","5108"};
+                    // 2023-11-30 我们已经失去了5102，改为5111了
+                    String[] location={"5109","5111","5108"};
                     if(Arrays.stream(location).noneMatch(v-> v.equals(demoData.getLocation()))) {
                         info(userInfo,demoData,"所在位置存在问题");
                         continue;
