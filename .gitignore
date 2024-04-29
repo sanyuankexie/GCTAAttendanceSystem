@@ -36,3 +36,23 @@ build/
 **/application.properties
 
 /logs/
+
+.gradle
+
+### IntelliJ IDEA ###
+.idea/modules.xml
+.idea/jarRepositories.xml
+.idea/compiler.xml
+.idea/libraries/
+
+out/
+!**/src/main/**/out/
+!**/src/test/**/out/
+
+bin/
+!**/src/main/**/bin/
+!**/src/test/**/bin/
+
+
+### Mac OS ###
+.DS_Store
