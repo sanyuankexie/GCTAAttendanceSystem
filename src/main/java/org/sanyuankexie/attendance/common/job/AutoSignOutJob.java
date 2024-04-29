@@ -38,6 +38,36 @@ public class AutoSignOutJob {
     void weekend(){
         executeInternal();
     }
+
+    //工作日
+    @Scheduled(cron = "00 29 23 ? * 1-4,7")
+    void workingDayRemind(){ executeRemind(); }
+    //周五周六11.30不签退
+    @Scheduled(cron = "00 59 23 ? * 5-6")
+    void weekendRemind(){
+        executeRemind();
+    }
+
+    public void executeRemind() {
+        log.info("<System>开始发邮件提醒");
+
+        List<RecordDTO> onlineUsers = attendanceRankService.getOnlineUserList();
+        if (onlineUsers.isEmpty()) {
+            log.info("<System>当前无在线学生");
+            return;
+        }
+        Long target = 5201314L;
+        for (RecordDTO onlineUser : onlineUsers) {
+            try {
+                target = onlineUser.getUserId();
+                threadPoolTaskExecutor.execute(new EmailThread(mailService, target, "AutoSignOutRemind.html", "[科协签到]: 今日签退提醒"));
+            } catch (Exception e) {
+                log.error( "<System><{}>签退提醒发生了一些错误",target);
+            }
+        }
+        log.info("<System>当前剩余人数:{}", attendanceRankService.getOnlineUserList().size());
+    }
+
     public void executeInternal() {
         log.info("<System>开始自动签退");
 
