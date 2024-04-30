@@ -7,6 +7,7 @@
 plugins {
     java
     `maven-publish`
+    id("org.springframework.boot") version "3.2.5"
 }
 
 repositories {
@@ -52,16 +53,6 @@ tasks.withType<JavaCompile>() {
     options.encoding = "UTF-8"
 }
 
-tasks.create("fatjar", Jar::class) {
-    group = "build" // OR, for example, "build"
-    description = "Creates a self-contained fat JAR of the application that can be run."
-    manifest.attributes["Main-Class"] = "org.sanyuankexie.attendance.GctaAttendanceSystemApplication"
-    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
-    val dependencies = configurations
-        .runtimeClasspath
-        .get()
-        .map(::zipTree)
-    from(dependencies)
-    archiveFileName.set("attendance.jar")
-    with(tasks.jar.get())
+tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
+    this.archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
 }
