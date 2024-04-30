@@ -1,4 +1,4 @@
-FROM mcr.microsoft.com/java/jre:11-zulu-alpine
+FROM mcr.microsoft.com/java/jre:17-zulu-alpine
 WORKDIR /app
 COPY build/libs/attendance.jar .
 
