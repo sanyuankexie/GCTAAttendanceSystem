@@ -1,6 +1,33 @@
 # 科协签到系统api文档
 
-这是一个面向桂林电子科技大学三院科协20级的签到系统（后端部分）
+这是一个面向桂林电子科技大学三院科协的签到系统（后端部分）
+
+## 开发相关
+
+### 运行用于测试的 mysql
+```shell
+docker run --detach --name mariadb -p 3306:3306 --env MARIADB_ROOT_PASSWORD=123456  mariadb:latest 
+```
+
+### 编译命令： 
+```shell
+./gradlew fatjar
+```
+
+### 打包 docker image
+```shell
+docker build -t kexie-attendance .
+```
+
+### 编译并打包 docker image
+```shell
+chmod +x ./release-docker.sh && sh ./release-docker.sh
+```
+
+
+执行`docker image`即可看到镜像
+
+### 
 
 ## API
 
