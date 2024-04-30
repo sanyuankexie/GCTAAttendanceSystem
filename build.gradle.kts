@@ -27,14 +27,20 @@ dependencies {
     implementation("com.alibaba:fastjson:1.2.47")
     implementation("org.springframework.boot:spring-boot-starter-mail:2.3.4.RELEASE")
     implementation("org.springframework.boot:spring-boot-starter-thymeleaf:2.3.4.RELEASE")
-    implementation("org.projectlombok:lombok:1.18.12")
+    compileOnly("org.projectlombok:lombok:1.18.32")
+    testCompileOnly("org.projectlombok:lombok:1.18.32")
+
+    annotationProcessor("org.projectlombok:lombok:1.18.32")
+    annotationProcessor("org.springframework.boot:spring-boot-configuration-processor:2.3.4.RELEASE")
+
+    testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.3.4.RELEASE")
 }
 
 group = "org.sanyuankexie"
 version = "0.1.0"
 description = "GCTAAttendanceSystem"
-java.sourceCompatibility = JavaVersion.VERSION_1_8
+java.sourceCompatibility = JavaVersion.VERSION_11
 
 publishing {
     publications.create<MavenPublication>("maven") {
@@ -49,13 +55,13 @@ tasks.withType<JavaCompile>() {
 tasks.create("fatjar", Jar::class) {
     group = "build" // OR, for example, "build"
     description = "Creates a self-contained fat JAR of the application that can be run."
-    manifest.attributes["Main-Class"] = "MainKt"
+    manifest.attributes["Main-Class"] = "org.sanyuankexie.attendance.GctaAttendanceSystemApplication"
     duplicatesStrategy = DuplicatesStrategy.EXCLUDE
     val dependencies = configurations
         .runtimeClasspath
         .get()
         .map(::zipTree)
     from(dependencies)
-    archiveFileName.set("at-app.jar")
+    archiveFileName.set("attendance.jar")
     with(tasks.jar.get())
 }
