@@ -2,7 +2,7 @@ server:
   port: 8088
 spring:
   profiles:
-    active: prod   #dev prod test  打包记得开启prod生产模式，这样子才有日志保存
+    active: dev   #dev prod test  打包记得开启prod生产模式，这样子才有日志保存
   mvc:
     view:
       prefix: classpath:/templates/
@@ -24,6 +24,11 @@ spring:
       min-idle: 5
       max-active: 20
     driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://127.0.0.1:3306/gctaattend?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+      #    url: jdbc:mysql://kexie2:3306/gctaattend?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+      #url: jdbc:mysql://119.29.192.108:3306/gctaattend?useUnicode=true&characterEncoding=utf-8&serverTimezone=Asia/Shanghai&useSSL=false
+    username: root
+    password: 123456
 
 mybatis-plus:
   configuration:
@@ -33,7 +38,7 @@ mybatis-plus:
 
 
 attendance:
-  term: '2023_2024_1'  #学期 1 2表示上下学期
-  week: '2023-9-4'  #第一周星期一
+  term: '2023_2024_2'  #学期 1 2表示上下学期
+  week: '2023-2-26'  #第一周星期一
   grade: 23
   path: ./logs
