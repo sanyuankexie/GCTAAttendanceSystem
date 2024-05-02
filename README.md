@@ -11,17 +11,12 @@ docker run --detach --name mariadb -p 3306:3306 --env MARIADB_ROOT_PASSWORD=1234
 
 ### 编译命令： 
 ```shell
-./gradlew fatjar
-```
-
-### 打包 docker image
-```shell
-docker build -t kexie-attendance .
+./gradlew bootJar
 ```
 
 ### 编译并打包 docker image
 ```shell
-chmod +x ./release-docker.sh && sh ./release-docker.sh
+docker build -t kexie-attendance .
 ```
 
 
