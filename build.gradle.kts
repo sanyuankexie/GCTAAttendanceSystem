@@ -23,7 +23,9 @@ dependencies {
     implementation("org.springframework.boot:spring-boot-starter:2.3.4.RELEASE")
     implementation("org.springframework.boot:spring-boot-starter-aop:2.3.4.RELEASE")
     implementation("org.springframework.boot:spring-boot-starter-web:2.3.4.RELEASE")
-    implementation("com.alibaba:easyexcel:3.0.0-beta3")
+
+    // 如果出现 Bug , see https://mp.weixin.qq.com/s?__biz=MzAwMjk5NTY3Mw==&mid=2247483950&idx=1&sn=47c6c1fed54b134f46f6dedafd34db0c&chksm=9ac0a698adb72f8e769bcfbff5a4fb0450f181bb754a2ad615dc17002f14d7ec039c0e24a1d7&token=395785991&lang=zh_CN#rd
+    implementation("com.alibaba:easyexcel:3.3.4")
     implementation("mysql:mysql-connector-java:8.0.18")
     implementation("com.alibaba:fastjson:1.2.47")
     implementation("org.springframework.boot:spring-boot-starter-mail:2.3.4.RELEASE")
@@ -39,7 +41,7 @@ dependencies {
 }
 
 group = "org.sanyuankexie"
-version = "0.1.0"
+version = "1.0.0"
 description = "GCTAAttendanceSystem"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
