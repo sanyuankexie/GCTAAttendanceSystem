@@ -116,8 +116,9 @@ public class AttendanceRankService {
                 systemInfo.getGrade());
 
         String[] t = trem.split("_");
-        String lable =t[0]+"-"+t[1]+("1".equals(t[2])?"上学期":"下学期");
-        resp.setHeader("Content-Disposition", "attachment;filename=" +  URLEncoder.encode(lable+"第"+nowWeek+"周" + ".xlsx","UTF-8"));
+        String lable = t[0] + "-" + t[1] + ("1".equals(t[2]) ? "上学期" : "下学期");
+        resp.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        resp.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(lable + "第" + nowWeek + "周" + ".xlsx", "UTF-8"));
         ExcelWriter excelWriter = null;
         try {
             excelWriter = EasyExcel.write(resp.getOutputStream(), RankExport.class).build();

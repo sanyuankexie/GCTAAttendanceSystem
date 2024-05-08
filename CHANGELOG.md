@@ -15,4 +15,5 @@
 
 ### Fixed
 - 修复`com.alibaba:easyexce`版本不匹配出现报错
+- 修复`/export`api content-type 错误
 
