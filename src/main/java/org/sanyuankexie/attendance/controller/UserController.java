@@ -48,7 +48,9 @@ public class UserController {
                 jsonObject.getString("operation"),
                 jsonObject.getLong("userId"),
                 jsonObject.getString("time"),
-              jsonObject.getString("token")));
+                jsonObject.getString("token"),
+                jsonObject.getInteger("week")
+        ));
     }
 
     @PostMapping("/import")

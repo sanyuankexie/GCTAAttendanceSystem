@@ -187,8 +187,10 @@ public class UserService {
     }
 
     @Transactional
-    public RankDTO modifyTime(String operation, Long userId, String time, String token) {
-        int week = timeHelper.getNowWeek();
+    public RankDTO modifyTime(String operation, Long userId, String time, String token, Integer week) {
+        if (week == null) {
+            week = timeHelper.getNowWeek();
+        }
         if (!token.equals(systemInfo.getPassword())){
             throw new ServiceException(CExceptionEnum.PASSWORD_INCORRECT);
         }

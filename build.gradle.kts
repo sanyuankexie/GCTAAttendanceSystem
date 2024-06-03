@@ -41,7 +41,7 @@ dependencies {
 }
 
 group = "org.sanyuankexie"
-version = "1.0.0"
+version = "1.0.1"
 description = "GCTAAttendanceSystem"
 java.sourceCompatibility = JavaVersion.VERSION_11
 
