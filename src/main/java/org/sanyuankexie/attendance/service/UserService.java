@@ -3,6 +3,8 @@ package org.sanyuankexie.attendance.service;
 import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.read.listener.PageReadListener;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.opencsv.CSVWriter;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.DTO.UserStatusEnum;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
@@ -26,7 +28,9 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.lang.reflect.Field;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
@@ -244,9 +248,58 @@ public class UserService {
     }
 
 
+    @Autowired
+    ObjectMapper objectMapper;
 
     @Autowired
     UserInsertMapper insertMapper;
+
+    public void exportUsersToCsv(HttpServletResponse response, String password) throws IOException {
+        if (!systemInfo.getPassword().equals(password)){
+            response.setHeader("Content-Type","application/json");
+            Map<String,Object> map=new HashMap<>();
+            map.put("code",CExceptionEnum.PASSWORD_INCORRECT.getCode());
+            map.put("msg",CExceptionEnum.PASSWORD_INCORRECT.getMsg());
+            objectMapper.writeValue(response.getOutputStream(),map);
+            return;
+        }
+
+        String filename = "users.csv";
+
+        response.setContentType("text/csv");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+
+        try (PrintWriter writer = response.getWriter();
+             CSVWriter csvWriter = new CSVWriter(writer)) {
+
+            // Write CSV header
+            String[] header = {"ID", "Name", "Dept", "Location", "Email", "Github ID", "Grade"};
+            csvWriter.writeNext(header);
+
+            // Fetch users and write data rows
+            List<User> users = userMapper.selectList();
+            for (User user : users) {
+                String[] data = {
+                        String.valueOf(user.getId()),
+                        user.getName(),
+                        user.getDept(),
+                        user.getLocation(),
+                        user.getEmail(),
+                        user.getGithubId(),
+                        user.getGrade()
+                };
+                csvWriter.writeNext(data);
+            }
+
+        } catch (IOException e) {
+            response.setHeader("Content-Type","application/json");
+            Map<String,Object> map=new HashMap<>();
+            map.put("code",CExceptionEnum.SERVER_INTERNAL_ERROR.getCode());
+            map.put("msg",CExceptionEnum.SERVER_INTERNAL_ERROR.getMsg());
+            objectMapper.writeValue(response.getOutputStream(),map);
+            e.printStackTrace();
+        }
+    }
 
     public void dataDao(MultipartFile file,Map<String,Object> map) {
         final Integer[] sum = {0};

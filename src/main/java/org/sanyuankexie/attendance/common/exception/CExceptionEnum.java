@@ -16,8 +16,9 @@ public enum CExceptionEnum {
     WEEK_NO_END(-209,"本周未结束"),
     TERM_NO_START(-210,"本学期未开始"),
     //未实现
-    USER_LEAVE(-211,"宁已离开科协,请联系管理员");
+    USER_LEAVE(-211,"宁已离开科协,请联系管理员"),
     //    WEEK_NO_END(-209,"本周未结束");
+    SERVER_INTERNAL_ERROR(-212,"服务器内部错误");
 
     private Integer code;
     private String msg;

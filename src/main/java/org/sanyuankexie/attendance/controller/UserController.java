@@ -11,6 +11,8 @@ import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
+import javax.servlet.http.HttpServletResponse;
+import java.io.IOException;
 import java.util.Map;
 
 @RestController
@@ -36,6 +38,7 @@ public class UserController {
         return ResultHelper.success(userService.signOut(userId), "签退成功");
     }
 
+    // 举报
     @PostMapping(value = "/complaint")
     public Object complaint(@RequestBody JSONObject jsonObject) {
         return ResultHelper.success(userService.complaint(jsonObject.getLong("targetUserId"), jsonObject.getLong("operatorUserId")), "举报成功");
@@ -57,4 +60,10 @@ public class UserController {
     public ResultVO<Map<String, Object>> impUser(@RequestPart("user") MultipartFile file, @Param("password") String password ){
         return ResultHelper.success(userService.importUser(file,password));
     }
+
+    @GetMapping("/export")
+    public void exportUsers(HttpServletResponse response, @Param("password") String password) throws IOException {
+        userService.exportUsersToCsv(response, password);
+    }
+
 }

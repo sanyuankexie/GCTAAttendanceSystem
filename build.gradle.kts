@@ -18,6 +18,8 @@ repositories {
 }
 
 dependencies {
+    // https://mvnrepository.com/artifact/com.opencsv/opencsv
+    implementation("com.opencsv:opencsv:5.9")
     implementation("com.alibaba:druid-spring-boot-starter:1.1.17")
     implementation("com.baomidou:mybatis-plus-boot-starter:3.4.2")
     implementation("org.springframework.boot:spring-boot-starter:2.3.4.RELEASE")
