@@ -61,6 +61,11 @@ public class UserController {
         return ResultHelper.success(userService.importUser(file, password));
     }
 
+    @DeleteMapping("/delete")
+    public ResultVO<Map<String, Object>> deleteUser(@Param("ids") String ids, @Param("password") String password) {
+        return ResultHelper.success(userService.deleteUser(ids, password));
+    }
+
     @GetMapping("/export")
     public void exportUsers(HttpServletResponse response, @Param("password") String password, @Nullable @Param("grade") String grade) throws IOException {
         userService.exportUsersToCsv(response, password, grade);

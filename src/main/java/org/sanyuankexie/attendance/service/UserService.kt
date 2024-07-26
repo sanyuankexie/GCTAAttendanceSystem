@@ -1,407 +1,414 @@
-package org.sanyuankexie.attendance.service;
+package org.sanyuankexie.attendance.service
 
-import com.alibaba.excel.EasyExcel;
-import com.alibaba.excel.read.listener.PageReadListener;
-import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
-import com.fasterxml.jackson.databind.ObjectMapper;
-import com.opencsv.CSVWriter;
-import org.sanyuankexie.attendance.common.DTO.RankDTO;
-import org.sanyuankexie.attendance.common.DTO.UserStatusEnum;
-import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
-import org.sanyuankexie.attendance.common.exception.ServiceException;
-import org.sanyuankexie.attendance.common.helper.TimeHelper;
-import org.sanyuankexie.attendance.mapper.AttendanceRankMapper;
-import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper;
-import org.sanyuankexie.attendance.mapper.UserInsertMapper;
-import org.sanyuankexie.attendance.mapper.UserMapper;
-import org.sanyuankexie.attendance.model.AttendanceRank;
-import org.sanyuankexie.attendance.model.AttendanceRecord;
-import org.sanyuankexie.attendance.model.SystemInfo;
-import org.sanyuankexie.attendance.model.User;
-import org.sanyuankexie.attendance.thread.EmailThread;
-import org.springframework.beans.BeanUtils;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.core.task.TaskExecutor;
-import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.web.multipart.MultipartFile;
-
-import javax.annotation.Resource;
-import javax.servlet.http.HttpServletResponse;
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.lang.reflect.Field;
-import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.regex.Pattern;
+import com.alibaba.excel.EasyExcel
+import com.alibaba.excel.read.listener.PageReadListener
+import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper
+import com.fasterxml.jackson.databind.ObjectMapper
+import com.opencsv.CSVWriter
+import org.sanyuankexie.attendance.common.DTO.RankDTO
+import org.sanyuankexie.attendance.common.DTO.UserStatusEnum
+import org.sanyuankexie.attendance.common.exception.CExceptionEnum
+import org.sanyuankexie.attendance.common.exception.ServiceException
+import org.sanyuankexie.attendance.common.helper.TimeHelper
+import org.sanyuankexie.attendance.mapper.AttendanceRankMapper
+import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper
+import org.sanyuankexie.attendance.mapper.UserInsertMapper
+import org.sanyuankexie.attendance.mapper.UserMapper
+import org.sanyuankexie.attendance.model.AttendanceRank
+import org.sanyuankexie.attendance.model.AttendanceRecord
+import org.sanyuankexie.attendance.model.SystemInfo
+import org.sanyuankexie.attendance.model.User
+import org.sanyuankexie.attendance.thread.EmailThread
+import org.springframework.beans.BeanUtils
+import org.springframework.beans.factory.annotation.Autowired
+import org.springframework.core.task.TaskExecutor
+import org.springframework.scheduling.concurrent.ThreadPoolTaskExecutor
+import org.springframework.stereotype.Service
+import org.springframework.transaction.annotation.Transactional
+import org.springframework.web.multipart.MultipartFile
+import javax.annotation.Resource
+import javax.servlet.http.HttpServletResponse
+import java.io.IOException
+import java.io.PrintWriter
+import java.lang.reflect.Field
+import java.util.*
+import java.util.concurrent.ConcurrentHashMap
+import java.util.regex.Pattern
 
 @Service
-public class UserService {
-    private static final ConcurrentHashMap<Long, Long> defenderMap = new ConcurrentHashMap<>();
-
-    @Resource
-    ThreadPoolTaskExecutor threadPoolTaskExecutor;
-
-    @Resource
-    private MailService mailService;
-
-    @Resource
-    private AttendanceRankMapper rankMapper;
-
-    @Resource
-    private AttendanceRankService rankService;
-
-    @Resource
-    private AttendanceRecordService recordService;
-
-    @Autowired
-    private AttendanceRecordMapper recordMapper;
-
-    @Resource
-    private UserMapper userMapper;
-
-    private final SystemInfo systemInfo;
-
-    private final TimeHelper timeHelper;
-
-    public UserService(TimeHelper timeHelper, SystemInfo systemInfo) {
-        this.timeHelper = timeHelper;
-        this.systemInfo = systemInfo;
+open class UserService(
+    private val timeHelper: TimeHelper,
+    private val systemInfo: SystemInfo
+) {
+    companion object {
+        private val defenderMap = ConcurrentHashMap<Long, Long>()
     }
 
+    @Resource
+    lateinit var threadPoolTaskExecutor: ThreadPoolTaskExecutor
+
+    @Resource
+    lateinit var mailService: MailService
+
+    @Resource
+    lateinit var rankMapper: AttendanceRankMapper
+
+    @Resource
+    lateinit var rankService: AttendanceRankService
+
+    @Resource
+    lateinit var recordService: AttendanceRecordService
+
+    @Autowired
+    lateinit var recordMapper: AttendanceRecordMapper
+
+    @Resource
+    lateinit var userMapper: UserMapper
+
+    @Autowired
+    lateinit var objectMapper: ObjectMapper
+
+    @Autowired
+    lateinit var insertMapper: UserInsertMapper
 
     @Transactional
-    public RankDTO signIn(Long userId) {
-        Long now = System.currentTimeMillis();
-        if(timeHelper.noAllSign(now)){
-            throw new ServiceException(CExceptionEnum.No_ALLOW_TIME, userId);
+    open fun signIn(userId: Long): RankDTO {
+        val now = System.currentTimeMillis()
+        if (timeHelper.noAllSign(now)) {
+            throw ServiceException(CExceptionEnum.No_ALLOW_TIME, userId)
         }
-        if (timeHelper.noStart(now)){
-            throw new ServiceException(CExceptionEnum.TERM_NO_START,userId);
+        if (timeHelper.noStart(now)) {
+            throw ServiceException(CExceptionEnum.TERM_NO_START, userId)
         }
-        User user = getUserByUserId(userId);
+        val user = getUserByUserId(userId)
+            ?: throw ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId)
+        val onlineRecord = recordService.getOnlineRecordByUserId(userId)
+        var rank = rankService.selectByUserIdAndWeek(userId, timeHelper.getNowWeek())
 
-        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
-        AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(userId);
-        AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, timeHelper.getNowWeek());
-
-        //defender start
-
-        if (defenderMap.get(userId) == null) {
-            defenderMap.put(userId, System.currentTimeMillis());
-        } else {
-            if (now - defenderMap.get(userId) <= 1000 * 15) {
-                throw new ServiceException(CExceptionEnum.FREQUENT_OPERATION, userId);
+        // Defender start
+        defenderMap[userId]?.let {
+            if (now - it <= 1000 * 15) {
+                throw ServiceException(CExceptionEnum.FREQUENT_OPERATION, userId)
             }
         }
-        defenderMap.put(userId, now);
-        //defender end
+        defenderMap[userId] = now
+        // Defender end
 
-        // If is first sign in
+        // If first sign in
         if (rank == null) {
-            //id, userId, week, totalTime
-            rank = new AttendanceRank(
-                    null,
-                     userId,
-                    timeHelper.getNowWeek(),
-                    0L,systemInfo.getTerm()
+            rank = AttendanceRank(
+                null,
+                userId,
+                timeHelper.getNowWeek(),
+                0L,
+                systemInfo.term
+            )
+            rankService.insert(rank)
+        }
 
-            );
-            rankService.insert(rank);
-        }
-        //Judging if Online
-        RankDTO rankDTO = new RankDTO();
+        // Judging if online
+        val rankDTO = RankDTO()
         if (onlineRecord == null) {
-            //id, userId, start, end, status, operatorId
-            AttendanceRecord newRecord = new AttendanceRecord(
-                    String.valueOf(System.currentTimeMillis()) + String.valueOf(userId),
-                    userId,
-                    System.currentTimeMillis(),
-                    null,
-                    1,
-                    userId,systemInfo.getTerm(),
-                    null
-            );
-            recordService.insert(newRecord);
+            val newRecord = AttendanceRecord(
+                "${System.currentTimeMillis()}$userId",
+                userId,
+                System.currentTimeMillis(),
+                null,
+                1,
+                userId,
+                systemInfo.term,
+                null
+            )
+            recordService.insert(newRecord)
         } else {
-            //haven't sign in
-            throw new ServiceException(CExceptionEnum.USER_ONLINE, userId);
+            throw ServiceException(CExceptionEnum.USER_ONLINE, userId)
         }
-        BeanUtils.copyProperties(rank, rankDTO);
-        rankDTO.setUserName(user.getName());
-        return rankDTO;
+        BeanUtils.copyProperties(rank, rankDTO)
+        rankDTO.userName = user.name
+        return rankDTO
     }
 
     @Transactional
-    public RankDTO signOut(Long userId) {
-        User user = getUserByUserId(userId);
-        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId);
-        AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(userId);
-        AttendanceRank rank = rankService.selectByUserIdAndWeek(userId, timeHelper.getNowWeek());
+    open fun signOut(userId: Long): RankDTO {
+        val user = getUserByUserId(userId)
+            ?: throw ServiceException(CExceptionEnum.USER_ID_NO_EXIST, userId)
+        val onlineRecord = recordService.getOnlineRecordByUserId(userId)
+            ?: throw ServiceException(CExceptionEnum.USER_OFFLINE, userId)
+        val rank = rankService.selectByUserIdAndWeek(userId, timeHelper.getNowWeek())
 
-        //Judging if Online
-        RankDTO rankDTO = new RankDTO();
-        if (onlineRecord == null) {
-            throw new ServiceException(CExceptionEnum.USER_OFFLINE, userId);
-        } else {
-            onlineRecord.setStatus(0);
-            onlineRecord.setEnd(System.currentTimeMillis());
-            recordService.updateById(onlineRecord);
-            rank.setTotalTime(rank.getTotalTime() + onlineRecord.getEnd() - onlineRecord.getStart());
-            rankService.updateById(rank);
-            rankDTO.setAccumulatedTime(onlineRecord.getEnd() - onlineRecord.getStart());
-        }
-        BeanUtils.copyProperties(rank, rankDTO);
-        rankDTO.setUserName(user.getName());
-        return rankDTO;
+        onlineRecord.status = 0
+        onlineRecord.end = System.currentTimeMillis()
+        recordService.updateById(onlineRecord)
+        rank.totalTime += onlineRecord.end!! - onlineRecord.start
+        rankService.updateById(rank)
+
+        val rankDTO = RankDTO()
+        rankDTO.accumulatedTime = onlineRecord.end!! - onlineRecord.start
+        BeanUtils.copyProperties(rank, rankDTO)
+        rankDTO.userName = user.name
+        return rankDTO
     }
 
-    public Object complaint(Long targetUserId, Long operatorUserId) {
-        //todo judge these userId
-        User user = getUserByUserId(targetUserId);
-        if (user == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, targetUserId);
-        //todo Test
-        if (operatorUserId == null) throw new ServiceException(CExceptionEnum.USER_ID_NO_EXIST, operatorUserId);
-        AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(targetUserId);
-        if (onlineRecord != null) {
-            onlineRecord.setStatus(-1);
-            onlineRecord.setEnd(System.currentTimeMillis());
-            onlineRecord.setOperatorId(operatorUserId);
-            recordService.updateById(onlineRecord);
-            threadPoolTaskExecutor.execute(new EmailThread(mailService, targetUserId, "complaint.html", "[科协签到]: 举报下线通知"));
-        } else {
-            throw new ServiceException(CExceptionEnum.USER_C_OFFLINE, targetUserId);
-        }
-        return null;
+    fun complaint(targetUserId: Long, operatorUserId: Long?): Any? {
+        val user = getUserByUserId(targetUserId)
+            ?: throw ServiceException(CExceptionEnum.USER_ID_NO_EXIST, targetUserId)
+        operatorUserId ?: throw ServiceException(CExceptionEnum.USER_ID_NO_EXIST, operatorUserId)
+        val onlineRecord = recordService.getOnlineRecordByUserId(targetUserId)
+            ?: throw ServiceException(CExceptionEnum.USER_C_OFFLINE, targetUserId)
+
+        onlineRecord.status = -1
+        onlineRecord.end = System.currentTimeMillis()
+        onlineRecord.operatorId = operatorUserId
+        recordService.updateById(onlineRecord)
+        threadPoolTaskExecutor.execute(EmailThread(mailService, targetUserId, "complaint.html", "[科协签到]: 举报下线通知"))
+        return null
     }
 
-    public void helpSignOut(Long userId) {
-        AttendanceRecord onlineRecord = recordService.getOnlineRecordByUserId(userId);
-        if (onlineRecord != null) {
-            onlineRecord.setStatus(-1);
-            onlineRecord.setEnd(System.currentTimeMillis());
-            onlineRecord.setOperatorId(5201314L);
-            recordService.updateById(onlineRecord);
+    fun helpSignOut(userId: Long) {
+        val onlineRecord = recordService.getOnlineRecordByUserId(userId)
+        onlineRecord?.let {
+            it.status = -1
+            it.end = System.currentTimeMillis()
+            it.operatorId = 5201314L
+            recordService.updateById(it)
         }
     }
 
-    public User getUserByUserId(Long userId) {
-        return userMapper.selectByUserId(userId);
+    fun getUserByUserId(userId: Long): User? {
+        return userMapper.selectByUserId(userId)
     }
 
     @Transactional
-    public RankDTO modifyTime(String operation, Long userId, String time, String token, Integer week) {
-        if (week == null) {
-            week = timeHelper.getNowWeek();
-        }
-        if (!token.equals(systemInfo.getPassword())){
-            throw new ServiceException(CExceptionEnum.PASSWORD_INCORRECT);
-        }
-        int status;
-        long res = (long) (Double.parseDouble(time) * 60 * 60 * 1000);;
-        switch (operation) {
-            case "add":
-                rankMapper.add(userId, week, res);
-                status = UserStatusEnum.SYSTEM_GIVEN.getStatus();
-                break;
-            case "sub":
-                rankMapper.sub(userId, week, res);
-                status = UserStatusEnum.SYSTEM_TAKEN.getStatus();
-                break;
-            case "set": // 忘记签到的人太多辣，直接设成18h X)
-                rankMapper.set(userId, week, res);
-                status = UserStatusEnum.SYSTEM_GIVEN.getStatus();
-                break;
-            default:
-                throw new ServiceException(CExceptionEnum.UNKNOWN, userId);
-        }
-        RankDTO rankDTO = new RankDTO();
-        AttendanceRank attendanceRank = rankService.selectByUserIdAndWeek(userId, week);
-        if (attendanceRank!=null){
-            BeanUtils.copyProperties(attendanceRank, rankDTO);
-        }else{
-            AttendanceRank iRank = new AttendanceRank(
-                    null,
-                    userId,
-                    timeHelper.getNowWeek(),
-                    res, systemInfo.getTerm()
-            );
-            rankService.insert(iRank);
-        }
-        //拆入说明
-        long l = System.currentTimeMillis();
-        AttendanceRecord attendanceRecord = new AttendanceRecord(l+""+userId,userId,l,null, status,
-                5201314L,systemInfo.getTerm(),res);
-        recordMapper.insert(attendanceRecord);
-        return rankDTO;
-    }
-
-    public Map<String,Object> importUser(MultipartFile file,String password){
-        Map<String,Object> map=new HashMap<>();
-        if (!systemInfo.getPassword().equals(password)){
-            map.put("result","密码不正确");
-            return  map;
-        }
-        dataDao(file,map);
-        return  map;
-    }
-
-
-    @Autowired
-    ObjectMapper objectMapper;
-
-    @Autowired
-    UserInsertMapper insertMapper;
-
-    public void exportUsersToCsv(HttpServletResponse response, String password, String grade) throws IOException {
-        if (!systemInfo.getPassword().equals(password)) {
-            response.setHeader("Content-Type", "application/json");
-            Map<String, Object> map = new HashMap<>();
-            map.put("code", CExceptionEnum.PASSWORD_INCORRECT.getCode());
-            map.put("msg", CExceptionEnum.PASSWORD_INCORRECT.getMsg());
-            objectMapper.writeValue(response.getOutputStream(), map);
-            return;
+    open fun modifyTime(operation: String, userId: Long, time: String, token: String, week: Int?): RankDTO {
+        val currentWeek = week ?: timeHelper.getNowWeek()
+        if (token != systemInfo.password) {
+            throw ServiceException(CExceptionEnum.PASSWORD_INCORRECT)
         }
 
-        String filename = "users.csv";
-
-        response.setContentType("text/csv");
-        response.setCharacterEncoding("UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        response.setHeader("Content-Type", "text/csv; charset=UTF-8");
-        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
-        response.setHeader("Content-Type", "application/json; charset=UTF-8");
-
-        try (PrintWriter writer = response.getWriter();
-             CSVWriter csvWriter = new CSVWriter(writer)) {
-
-            // Write CSV header
-            String[] header = {"ID", "Name", "Dept", "Location", "Email", "Github ID", "Grade"};
-            csvWriter.writeNext(header);
-
-            // Fetch users and write data rows
-            List<User> users = userMapper.selectList(grade);
-            for (User user : users) {
-                String[] data = {
-                        String.valueOf(user.getId()),
-                        user.getName(),
-                        user.getDept(),
-                        user.getLocation(),
-                        user.getEmail(),
-                        user.getGithubId(),
-                        user.getGrade()
-                };
-                csvWriter.writeNext(data);
+        val res = (time.toDouble() * 60 * 60 * 1000).toLong()
+        val status: Int = when (operation) {
+            "add" -> {
+                rankMapper.add(userId, currentWeek, res)
+                UserStatusEnum.SYSTEM_GIVEN.status
             }
-
-        } catch (IOException e) {
-            response.setHeader("Content-Type", "application/json");
-            Map<String, Object> map = new HashMap<>();
-            map.put("code", CExceptionEnum.SERVER_INTERNAL_ERROR.getCode());
-            map.put("msg", CExceptionEnum.SERVER_INTERNAL_ERROR.getMsg());
-            objectMapper.writeValue(response.getOutputStream(), map);
-            e.printStackTrace();
+            "sub" -> {
+                rankMapper.sub(userId, currentWeek, res)
+                UserStatusEnum.SYSTEM_TAKEN.status
+            }
+            "set" -> {
+                rankMapper.set(userId, currentWeek, res)
+                UserStatusEnum.SYSTEM_GIVEN.status
+            }
+            else -> throw ServiceException(CExceptionEnum.UNKNOWN, userId)
         }
+
+        val rankDTO = RankDTO()
+        val attendanceRank = rankService.selectByUserIdAndWeek(userId, currentWeek)
+        if (attendanceRank != null) {
+            BeanUtils.copyProperties(attendanceRank, rankDTO)
+        } else {
+            val newRank = AttendanceRank(
+                null,
+                userId,
+                timeHelper.getNowWeek(),
+                res,
+                systemInfo.term
+            )
+            rankService.insert(newRank)
+        }
+
+        val record = AttendanceRecord(
+            "${System.currentTimeMillis()}$userId",
+            userId,
+            System.currentTimeMillis(),
+            null,
+            status,
+            5201314L,
+            systemInfo.term,
+            res
+        )
+        recordMapper.insert(record)
+        return rankDTO
     }
 
+    fun importUser(file: MultipartFile, password: String): Map<String, Any> {
+        val map = mutableMapOf<String, Any>()
+        if (systemInfo.password != password) {
+            map["result"] = "密码不正确"
+            return map
+        }
+        dataDao(file, map)
+        return map
+    }
 
-    public void dataDao(MultipartFile file,Map<String,Object> map) {
-        final Integer[] sum = {0};
-        final Integer[] in={0};
-        Integer[] up={0};
-        List<String> userInfo=new ArrayList<>();
+    fun deleteUser(ids: String, password: String): Map<String, Any> {
+        val map = mutableMapOf<String, Any>()
+        if (systemInfo.password != password) {
+            map["result"] = "密码不正确"
+            return map
+        }
+
+        val idList = ids.split(",").mapNotNull { it.trim().toLongOrNull() }
+
+        if (idList.isEmpty()) {
+            map["result"] = "无效的用户ID"
+            return map
+        }
+
         try {
-            EasyExcel.read(file.getInputStream(), User.class, new PageReadListener<User>(dataList -> {
-                for (User demoData : dataList) {
-                    sum[0]++;
-
-                    if (isNull(demoData)){
-                        info(userInfo,demoData,"用户数据不全(除github)");
-                        continue;
-                    }
-
-                    if (!checkMail(demoData.getEmail())){
-                        info(userInfo,demoData,"邮箱检验不通过");
-                        continue;
-                    }
-
-                    if ( String.valueOf(demoData.getId()).length()!="2000300223".length()){
-                        info(userInfo,demoData,"邮箱长度不正确");
-                        continue;
-
-                    }
-                    // 2023-11-30 我们已经失去了5102，改为5111了
-                    String[] location={"5109","5111","5108"};
-                    if(Arrays.stream(location).noneMatch(v-> v.equals(demoData.getLocation()))) {
-                        info(userInfo,demoData,"所在位置存在问题");
-                        continue;
-                    }
-                    String[] dept={"多媒体部","软件部","硬件部","老人"};
-                    if(Arrays.stream(dept).noneMatch(v-> v.equals(demoData.getDept()))) {
-                        info(userInfo,demoData,"所在部门存在问题");
-                        continue;
-                    }
-
-
-                    QueryWrapper<User> userQueryWrapper=new QueryWrapper<>();
-
-                    userQueryWrapper.eq("id",demoData.getId());
-                    User user = insertMapper.selectOne(userQueryWrapper);
-
-                    if (user!=null){
-                        List<String> change = getChange(user, demoData);
-                        if (change.size()!=0){
-                            insertMapper.updateById(demoData);
-                            info(userInfo,user,"更新了数据("+ change+")");
-                            up[0]++;
-                        }
-                    }else{
-                        insertMapper.insert(demoData);
-                        in[0]++;
-                    }
-                }
-            })).sheet().doRead();
-        } catch (IOException e) {
-            e.printStackTrace();
-            map.put("result","传入异常");
+            val deleteCount = userMapper.delete(idList)
+            map["result"] = "成功删除 $deleteCount 名用户"
+        } catch (e: Exception) {
+            e.printStackTrace()
+            map["result"] = "删除过程中出现错误: ${e.message}"
         }
-        map.put("info",userInfo);
-        map.put("result","总共人数:"+sum[0]+" 修改人数:"+up[0]+" 新增人数:"+in[0]);
+
+        return map
     }
 
-    public  void info(List<String> list,User user,String msg){
-        list.add(user.getId() + "(" + user.getName() + ")" + ":" + msg);
-    }
-    public  boolean isNull(User user){
 
-        return  user.getId()==null||user.getDept()==null||user.getLocation()==null||user.getName()==null||user.getEmail()==null;
 
-    }
+    @Throws(IOException::class)
+    fun exportUsersToCsv(response: HttpServletResponse, password: String, grade: String) {
+        if (systemInfo.password != password) {
+            response.setHeader("Content-Type", "application/json")
+            val map = mutableMapOf<String, Any>()
+            map["code"] = CExceptionEnum.PASSWORD_INCORRECT.code
+            map["msg"] = CExceptionEnum.PASSWORD_INCORRECT.msg
+            objectMapper.writeValue(response.outputStream, map)
+            return
+        }
 
-    public boolean checkMail(String email){
-        String regEx="^[A-Za-z\\d]+([-_.][A-Za-z\\d]+)*@([A-Za-z\\d]+[-.])+[A-Za-z\\d]{2,4}$";
-        return Pattern.matches(regEx,email);
-    }
+        val filename = "users.csv"
+        response.contentType = "text/csv"
+        response.characterEncoding = "UTF-8"
+        response.setHeader("Content-Disposition", "attachment; filename=\"$filename\"")
+        response.setHeader("Content-Type", "text/csv; charset=UTF-8")
+        response.setHeader("Content-Disposition", "attachment; filename=\"$filename\"")
+        response.setHeader("Content-Type", "application/json; charset=UTF-8")
 
-    public List<String> getChange(User oU,User nU){
-        List<String> info=new ArrayList<>();
-        Field[] declaredFields = User.class.getDeclaredFields();
-        for(Field f:declaredFields){
-            f.setAccessible(true);
-            try {
-                if (!String.valueOf(f.get(oU)).equals(String.valueOf(f.get(nU)))){
-                    if(f.getName().equals("githubId")){
-                        if(f.get(nU)==null){
-                            continue;
-                        }
+        try {
+            PrintWriter(response.writer).use { writer ->
+                CSVWriter(writer).use { csvWriter ->
+                    val header = arrayOf("ID", "Name", "Dept", "Location", "Email", "Github ID", "Grade")
+                    csvWriter.writeNext(header)
+
+                    val users = userMapper.selectList(grade)
+                    for (user in users) {
+                        val data = arrayOf(
+                            user.id.toString(),
+                            user.name,
+                            user.dept,
+                            user.location,
+                            user.email,
+                            user.githubId,
+                            user.grade
+                        )
+                        csvWriter.writeNext(data)
                     }
-                    info.add(f.get(oU)+"->"+f.get(nU));
                 }
-            } catch (IllegalAccessException e) {
-                e.printStackTrace();
+            }
+        } catch (e: IOException) {
+            response.setHeader("Content-Type", "application/json")
+            val map = mutableMapOf<String, Any>()
+            map["code"] = CExceptionEnum.SERVER_INTERNAL_ERROR.code
+            map["msg"] = CExceptionEnum.SERVER_INTERNAL_ERROR.msg
+            objectMapper.writeValue(response.outputStream, map)
+            e.printStackTrace()
+        }
+    }
+
+    fun dataDao(file: MultipartFile, map: MutableMap<String, Any>) {
+        val sum = arrayOf(0)
+        val inCount = arrayOf(0)
+        val up = arrayOf(0)
+        val userInfo = mutableListOf<String>()
+        try {
+            EasyExcel.read(file.inputStream, User::class.java, PageReadListener<User> { dataList ->
+                for (demoData in dataList) {
+                    sum[0]++
+
+                    if (isNull(demoData)) {
+                        info(userInfo, demoData, "用户数据不全(除github)")
+                        continue
+                    }
+
+                    if (!checkMail(demoData.email)) {
+                        info(userInfo, demoData, "邮箱检验不通过")
+                        continue
+                    }
+
+                    if (demoData.id.toString().length != "2000300223".length) {
+                        info(userInfo, demoData, "邮箱长度不正确")
+                        continue
+                    }
+
+                    val location = arrayOf("5109", "5111", "5108")
+                    if (location.none { it == demoData.location }) {
+                        info(userInfo, demoData, "所在位置存在问题")
+                        continue
+                    }
+
+                    val dept = arrayOf("多媒体部", "软件部", "硬件部", "老人")
+                    if (dept.none { it == demoData.dept }) {
+                        info(userInfo, demoData, "所在部门存在问题")
+                        continue
+                    }
+
+                    val userQueryWrapper = QueryWrapper<User>()
+                    userQueryWrapper.eq("id", demoData.id)
+                    val user = insertMapper.selectOne(userQueryWrapper)
+
+                    if (user != null) {
+                        val change = getChange(user, demoData)
+                        if (change.isNotEmpty()) {
+                            insertMapper.updateById(demoData)
+                            info(userInfo, user, "更新了数据($change)")
+                            up[0]++
+                        }
+                    } else {
+                        insertMapper.insert(demoData)
+                        inCount[0]++
+                    }
+                }
+            }).sheet().doRead()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            map["result"] = "传入异常"
+        }
+        map["info"] = userInfo
+        map["result"] = "总共人数:${sum[0]} 修改人数:${up[0]} 新增人数:${inCount[0]}"
+    }
+
+    fun info(list: MutableList<String>, user: User, msg: String) {
+        list.add("${user.id}(${user.name}): $msg")
+    }
+
+    fun isNull(user: User): Boolean {
+        return user.id == null || user.dept == null || user.location == null || user.name == null || user.email == null
+    }
+
+    fun checkMail(email: String): Boolean {
+        val regEx = "^[A-Za-z\\d]+([-_.][A-Za-z\\d]+)*@([A-Za-z\\d]+[-.])+[A-Za-z\\d]{2,4}$"
+        return Pattern.matches(regEx, email)
+    }
+
+    fun getChange(oU: User, nU: User): List<String> {
+        val info = mutableListOf<String>()
+        val declaredFields = User::class.java.declaredFields
+        for (f in declaredFields) {
+            f.isAccessible = true
+            try {
+                if (f.get(oU) != f.get(nU)) {
+                    if (f.name == "githubId" && f.get(nU) == null) {
+                        continue
+                    }
+                    info.add("${f.get(oU)}->${f.get(nU)}")
+                }
+            } catch (e: IllegalAccessException) {
+                e.printStackTrace()
             }
         }
-        return info;
+        return info
     }
 }

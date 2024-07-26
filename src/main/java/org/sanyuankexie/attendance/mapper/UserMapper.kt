@@ -1,5 +1,6 @@
 package org.sanyuankexie.attendance.mapper
 
+import org.apache.ibatis.annotations.Delete
 import org.apache.ibatis.annotations.Mapper
 import org.apache.ibatis.annotations.Param
 import org.apache.ibatis.annotations.Select
@@ -22,4 +23,15 @@ interface UserMapper {
         </script>
     """)
     fun selectList(@Param("grade") grade: String?): List<User>
+
+    @Delete("""
+        <script>
+        DELETE FROM user 
+        WHERE id IN 
+        <foreach item="id" collection="idList" open="(" separator="," close=")">
+            #{id}
+        </foreach>
+        </script>
+    """)
+    fun delete(@Param("idList") idList: List<Long>): Int
 }
