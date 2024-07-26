@@ -8,6 +8,7 @@ plugins {
     java
     `maven-publish`
     id("org.springframework.boot") version "3.3.0"
+    kotlin("jvm")
 }
 
 repositories {
@@ -15,6 +16,7 @@ repositories {
     maven {
         url = uri("https://repo.maven.apache.org/maven2/")
     }
+    mavenCentral()
 }
 
 dependencies {
@@ -40,12 +42,12 @@ dependencies {
 
     testAnnotationProcessor("org.projectlombok:lombok:1.18.32")
     testImplementation("org.springframework.boot:spring-boot-starter-test:2.3.4.RELEASE")
+    implementation(kotlin("stdlib-jdk8"))
 }
 
 group = "org.sanyuankexie"
 version = "1.0.1"
 description = "GCTAAttendanceSystem"
-java.sourceCompatibility = JavaVersion.VERSION_11
 
 publishing {
     publications.create<MavenPublication>("maven") {
@@ -59,4 +61,7 @@ tasks.withType<JavaCompile>() {
 
 tasks.getByName<org.springframework.boot.gradle.tasks.bundling.BootJar>("bootJar") {
     this.archiveFileName.set("${archiveBaseName.get()}.${archiveExtension.get()}")
+}
+kotlin {
+    jvmToolchain(11)
 }
