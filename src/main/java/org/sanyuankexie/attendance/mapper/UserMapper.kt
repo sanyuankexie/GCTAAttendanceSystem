@@ -1,19 +1,25 @@
-package org.sanyuankexie.attendance.mapper;
+package org.sanyuankexie.attendance.mapper
 
-import org.apache.ibatis.annotations.Insert;
-import org.apache.ibatis.annotations.Mapper;
-import org.apache.ibatis.annotations.Select;
-import org.sanyuankexie.attendance.model.User;
-
-import java.util.List;
+import org.apache.ibatis.annotations.Mapper
+import org.apache.ibatis.annotations.Param
+import org.apache.ibatis.annotations.Select
+import org.sanyuankexie.attendance.model.User
 
 @Mapper
-public interface UserMapper  {
+interface UserMapper {
 
-    @Select("SELECT * FROM user WHERE id=#{id}")
-    User selectByUserId(Long id);
+    @Select("""
+        SELECT * FROM user WHERE id=#{id}
+    """)
+    fun selectByUserId(@Param("id") id: Long): User?
 
-    @Select("SELECT * FROM user")
-    List<User> selectList();
-
+    @Select("""
+        <script>
+        SELECT * FROM user 
+        <where>
+            <if test='grade != null'>grade = #{grade}</if>
+        </where>
+        </script>
+    """)
+    fun selectList(@Param("grade") grade: String?): List<User>
 }

@@ -254,20 +254,24 @@ public class UserService {
     @Autowired
     UserInsertMapper insertMapper;
 
-    public void exportUsersToCsv(HttpServletResponse response, String password) throws IOException {
-        if (!systemInfo.getPassword().equals(password)){
-            response.setHeader("Content-Type","application/json");
-            Map<String,Object> map=new HashMap<>();
-            map.put("code",CExceptionEnum.PASSWORD_INCORRECT.getCode());
-            map.put("msg",CExceptionEnum.PASSWORD_INCORRECT.getMsg());
-            objectMapper.writeValue(response.getOutputStream(),map);
+    public void exportUsersToCsv(HttpServletResponse response, String password, String grade) throws IOException {
+        if (!systemInfo.getPassword().equals(password)) {
+            response.setHeader("Content-Type", "application/json");
+            Map<String, Object> map = new HashMap<>();
+            map.put("code", CExceptionEnum.PASSWORD_INCORRECT.getCode());
+            map.put("msg", CExceptionEnum.PASSWORD_INCORRECT.getMsg());
+            objectMapper.writeValue(response.getOutputStream(), map);
             return;
         }
 
         String filename = "users.csv";
 
         response.setContentType("text/csv");
+        response.setCharacterEncoding("UTF-8");
         response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        response.setHeader("Content-Type", "text/csv; charset=UTF-8");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        response.setHeader("Content-Type", "application/json; charset=UTF-8");
 
         try (PrintWriter writer = response.getWriter();
              CSVWriter csvWriter = new CSVWriter(writer)) {
@@ -277,7 +281,7 @@ public class UserService {
             csvWriter.writeNext(header);
 
             // Fetch users and write data rows
-            List<User> users = userMapper.selectList();
+            List<User> users = userMapper.selectList(grade);
             for (User user : users) {
                 String[] data = {
                         String.valueOf(user.getId()),
@@ -292,14 +296,15 @@ public class UserService {
             }
 
         } catch (IOException e) {
-            response.setHeader("Content-Type","application/json");
-            Map<String,Object> map=new HashMap<>();
-            map.put("code",CExceptionEnum.SERVER_INTERNAL_ERROR.getCode());
-            map.put("msg",CExceptionEnum.SERVER_INTERNAL_ERROR.getMsg());
-            objectMapper.writeValue(response.getOutputStream(),map);
+            response.setHeader("Content-Type", "application/json");
+            Map<String, Object> map = new HashMap<>();
+            map.put("code", CExceptionEnum.SERVER_INTERNAL_ERROR.getCode());
+            map.put("msg", CExceptionEnum.SERVER_INTERNAL_ERROR.getMsg());
+            objectMapper.writeValue(response.getOutputStream(), map);
             e.printStackTrace();
         }
     }
+
 
     public void dataDao(MultipartFile file,Map<String,Object> map) {
         final Integer[] sum = {0};

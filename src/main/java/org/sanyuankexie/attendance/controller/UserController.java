@@ -7,6 +7,7 @@ import org.sanyuankexie.attendance.common.api.ResultVO;
 import org.sanyuankexie.attendance.common.aspect.annotation.ConvertTime;
 import org.sanyuankexie.attendance.common.helper.ResultHelper;
 import org.sanyuankexie.attendance.service.UserService;
+import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -21,7 +22,6 @@ public class UserController {
 
     @Resource
     private UserService userService;
-
 
 
     @ConvertTime
@@ -57,13 +57,13 @@ public class UserController {
     }
 
     @PostMapping("/import")
-    public ResultVO<Map<String, Object>> impUser(@RequestPart("user") MultipartFile file, @Param("password") String password ){
-        return ResultHelper.success(userService.importUser(file,password));
+    public ResultVO<Map<String, Object>> impUser(@RequestPart("user") MultipartFile file, @Param("password") String password) {
+        return ResultHelper.success(userService.importUser(file, password));
     }
 
     @GetMapping("/export")
-    public void exportUsers(HttpServletResponse response, @Param("password") String password) throws IOException {
-        userService.exportUsersToCsv(response, password);
+    public void exportUsers(HttpServletResponse response, @Param("password") String password, @Nullable @Param("grade") String grade) throws IOException {
+        userService.exportUsersToCsv(response, password, grade);
     }
 
 }
