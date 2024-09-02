@@ -6,7 +6,7 @@ WORKDIR /workspace
 COPY . .
 
 # Build the project
-RUN ./gradlew bootJar
+RUN chmod +x ./gradlew && ./gradlew bootJar
 
 # Stage 2: Create final image
 FROM mcr.microsoft.com/java/jre:17-zulu-alpine
