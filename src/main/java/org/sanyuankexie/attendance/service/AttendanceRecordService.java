@@ -104,6 +104,7 @@ public class AttendanceRecordService {
         if (record != null) {
             BeanUtils.copyProperties(record, userStatusDTO);
             userStatusDTO.setUserName(user.getName());
+            userStatusDTO.setWeek(timeHelper.getNowWeek());
             return userStatusDTO;
         } else {
             userStatusDTO.setUserId(user.getId());
