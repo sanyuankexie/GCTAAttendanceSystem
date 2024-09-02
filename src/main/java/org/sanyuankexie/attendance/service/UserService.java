@@ -297,7 +297,7 @@ public class UserService {
         response.setHeader("Content-Type", "application/json; charset=UTF-8");
 
         try (PrintWriter writer = response.getWriter(); CSVWriter csvWriter = new CSVWriter(writer)) {
-            String[] header = {"ID", "Name", "Dept", "Location", "Email", "Github ID", "Grade"};
+            String[] header = {"ID", "Name", "Dept", "Location", "Email", "Github ID", "Grade", "Learn"};
             csvWriter.writeNext(header);
 
             List<User> users = userMapper.selectList(grade);
@@ -309,7 +309,8 @@ public class UserService {
                         user.getLocation(),
                         user.getEmail(),
                         user.getGithubId(),
-                        user.getGrade()
+                        user.getGrade(),
+                        user.getLearn()
                 };
                 csvWriter.writeNext(data);
             }
