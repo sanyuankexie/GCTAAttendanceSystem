@@ -21,4 +21,6 @@ public class User {
     private   String githubId;
     @ExcelProperty("年级(例如：22级填22)")
     private String grade;
+    @ExcelProperty("方向")
+    private String learn;
 }
