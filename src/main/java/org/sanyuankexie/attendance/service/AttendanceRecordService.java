@@ -5,8 +5,10 @@ import org.sanyuankexie.attendance.common.DTO.UserStatusDTO;
 import org.sanyuankexie.attendance.common.DTO.UserStatusEnum;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
+import org.sanyuankexie.attendance.common.helper.TimeHelper;
 import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper;
 import org.sanyuankexie.attendance.model.AttendanceRecord;
+import org.sanyuankexie.attendance.model.SystemInfo;
 import org.sanyuankexie.attendance.model.User;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Value;
@@ -30,6 +32,11 @@ public class AttendanceRecordService {
     @Value("${attendance.term}")
     private String term;
 
+    private final TimeHelper timeHelper;
+
+    public AttendanceRecordService(TimeHelper timeHelper, SystemInfo systemInfo) {
+        this.timeHelper = timeHelper;
+    }
 
     DecimalFormat dft = new DecimalFormat("0.00");
 
@@ -102,6 +109,7 @@ public class AttendanceRecordService {
             userStatusDTO.setUserId(user.getId());
             userStatusDTO.setStatus(UserStatusEnum.OFFLINE.getStatus());
             userStatusDTO.setUserName(user.getName());
+            userStatusDTO.setWeek(timeHelper.getNowWeek());
             return userStatusDTO;
         }
     }
