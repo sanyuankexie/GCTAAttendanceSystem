@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.ibatis.annotations.Param;
 import org.apache.poi.util.StringUtil;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.DTO.RecordDTO;
@@ -14,6 +15,7 @@ import org.sanyuankexie.attendance.mapper.AttendanceRecordMapper;
 import org.sanyuankexie.attendance.model.AttendanceRank;
 import org.sanyuankexie.attendance.model.RankExport;
 import org.sanyuankexie.attendance.model.SystemInfo;
+import org.sanyuankexie.attendance.model.TermRankExport;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
@@ -28,9 +30,9 @@ public class AttendanceRankService {
 
     private final AttendanceRecordMapper recordMapper;
 
-   private final AttendanceRankMapper attendanceRankMapper;
+    private final AttendanceRankMapper attendanceRankMapper;
 
-   private final SystemInfo systemInfo;
+    private final SystemInfo systemInfo;
 
     private final TimeHelper timeHelper;
     private final ObjectMapper objectMapper;
@@ -43,8 +45,9 @@ public class AttendanceRankService {
         this.attendanceRankMapper = attendanceRankMapper;
         this.objectMapper = objectMapper;
     }
+
     public List<RankDTO> getTopFive() {
-        List<RankDTO> rankDTOList = rankMapper.getTopFive(timeHelper.getNowWeek(),  systemInfo.getTerm(),
+        List<RankDTO> rankDTOList = rankMapper.getTopFive(timeHelper.getNowWeek(), systemInfo.getTerm(),
                 systemInfo.getGrade());
         if (rankDTOList == null) return null;
         List<RankDTO> resList = new ArrayList<>();
@@ -80,34 +83,34 @@ public class AttendanceRankService {
 
         List<RecordDTO> list = recordMapper.selectOnlineRecord();
         Collections.shuffle(list);
-        return  list;
+        return list;
     }
 
 
     public void dowRank(String password, String trem, Integer week, HttpServletResponse resp) throws IOException {
         //默认值
-       trem=trem==null?systemInfo.getTerm():trem;
-       week=week==null?-1:week;
-        if (!systemInfo.getPassword().equals(password)){
-            resp.setHeader("Content-Type","application/json");
-            Map<String,Object> map=new HashMap<>();
-            map.put("code",CExceptionEnum.PASSWORD_INCORRECT.getCode());
-            map.put("msg",CExceptionEnum.PASSWORD_INCORRECT.getMsg());
-            objectMapper.writeValue(resp.getOutputStream(),map);
+        trem = trem == null ? systemInfo.getTerm() : trem;
+        week = week == null ? -1 : week;
+        if (!systemInfo.getPassword().equals(password)) {
+            resp.setHeader("Content-Type", "application/json");
+            Map<String, Object> map = new HashMap<>();
+            map.put("code", CExceptionEnum.PASSWORD_INCORRECT.getCode());
+            map.put("msg", CExceptionEnum.PASSWORD_INCORRECT.getMsg());
+            objectMapper.writeValue(resp.getOutputStream(), map);
             return;
         }
         int nowWeek = timeHelper.getNowWeek();
 //        System.out.println(nowWeek);
-        boolean thisWeek= week == 0 || week == nowWeek;
+        boolean thisWeek = week == 0 || week == nowWeek;
 
-        nowWeek=week<=0?week+nowWeek:week;
-        if (systemInfo.getTerm().equals(trem)&&(nowWeek> timeHelper.getNowWeek()||nowWeek<=0)){
+        nowWeek = week <= 0 ? week + nowWeek : week;
+        if (systemInfo.getTerm().equals(trem) && (nowWeek > timeHelper.getNowWeek() || nowWeek <= 0)) {
             //日期异常
-            resp.setHeader("Content-Type","application/json");
-            Map<String,Object> map=new HashMap<>();
-            map.put("code",CExceptionEnum.DATE_ERR.getCode());
-            map.put("msg",CExceptionEnum. DATE_ERR.getMsg());
-            objectMapper.writeValue(resp.getOutputStream(),map);
+            resp.setHeader("Content-Type", "application/json");
+            Map<String, Object> map = new HashMap<>();
+            map.put("code", CExceptionEnum.DATE_ERR.getCode());
+            map.put("msg", CExceptionEnum.DATE_ERR.getMsg());
+            objectMapper.writeValue(resp.getOutputStream(), map);
             return;
         }
         List<RankExport> newWeekRank = attendanceRankMapper.getNewWeekRank(trem, String.valueOf(nowWeek),
@@ -122,10 +125,56 @@ public class AttendanceRankService {
         ExcelWriter excelWriter = null;
         try {
             excelWriter = EasyExcel.write(resp.getOutputStream(), RankExport.class).build();
-            WriteSheet newRank = EasyExcel.writerSheet(thisWeek?"新人(本周未截止)":"新人").build();
-            WriteSheet oldRank=EasyExcel.writerSheet(thisWeek?"老人(本周未截止)":"老人").build();
+            WriteSheet newRank = EasyExcel.writerSheet(thisWeek ? "新人(本周未截止)" : "新人").build();
+            WriteSheet oldRank = EasyExcel.writerSheet(thisWeek ? "老人(本周未截止)" : "老人").build();
             excelWriter.write(newWeekRank, newRank);
-            excelWriter.write(oldWeekRank,oldRank);
+            excelWriter.write(oldWeekRank, oldRank);
+        } catch (IOException e) {
+            e.printStackTrace();
+        } finally {
+            // 强制写入
+            if (excelWriter != null) {
+                excelWriter.finish();
+            }
+        }
+    }
+
+    public void getTermRankWithWeeklyStats(String password, String trem, int startWeek,
+                            int endWeek, HttpServletResponse resp) throws IOException {
+        //默认值
+        trem = trem == null ? systemInfo.getTerm() : trem;
+
+        if (!systemInfo.getPassword().equals(password)) {
+            resp.setHeader("Content-Type", "application/json");
+            Map<String, Object> map = new HashMap<>();
+            map.put("code", CExceptionEnum.PASSWORD_INCORRECT.getCode());
+            map.put("msg", CExceptionEnum.PASSWORD_INCORRECT.getMsg());
+            objectMapper.writeValue(resp.getOutputStream(), map);
+            return;
+        }
+        int nowWeek = timeHelper.getNowWeek();
+//        System.out.println(nowWeek);
+
+        if (systemInfo.getTerm().equals(trem) && (nowWeek > timeHelper.getNowWeek() || nowWeek <= 0)) {
+            //日期异常
+            resp.setHeader("Content-Type", "application/json");
+            Map<String, Object> map = new HashMap<>();
+            map.put("code", CExceptionEnum.DATE_ERR.getCode());
+            map.put("msg", CExceptionEnum.DATE_ERR.getMsg());
+            objectMapper.writeValue(resp.getOutputStream(), map);
+            return;
+        }
+        List<TermRankExport> newWeekRank = attendanceRankMapper.getTermRankWithWeeklyStats(trem, systemInfo.getGrade(), startWeek, endWeek);
+
+        String[] t = trem.split("_");
+        String lable = t[0] + "-" + t[1] + ("1".equals(t[2]) ? "上学期" : "下学期");
+        resp.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        resp.setHeader("Content-Disposition", "attachment;filename=" + URLEncoder.encode(lable + "第" + nowWeek + "周" + ".xlsx", "UTF-8"));
+        ExcelWriter excelWriter = null;
+        try {
+            excelWriter = EasyExcel.write(resp.getOutputStream(), RankExport.class).build();
+            WriteSheet newRank = EasyExcel.writerSheet(String.format("新人，从%d周到%d周", startWeek, endWeek)).build();
+            excelWriter.write(newWeekRank, newRank);
         } catch (IOException e) {
             e.printStackTrace();
         } finally {

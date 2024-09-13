@@ -27,13 +27,13 @@ public class RecordController {
 
 
     @GetMapping(value = "/{userId}")
-    public ResultVO<List<RecordDTO>> record(@PathVariable Long userId){
+    public ResultVO<List<RecordDTO>> record(@PathVariable Long userId) {
         return ResultHelper.success(recordService.selectRecordListByUserId(userId), "成功获取个人数据");
     }
 
     @GetMapping("/{userId}/{term}")
-    public ResultVO<List<RecordDTO>> recordTerm(@PathVariable Long userId,@PathVariable String term){
-        return ResultHelper.success(recordService.selectRecordListByUserId(userId,term), "成功获取个人数据");
+    public ResultVO<List<RecordDTO>> recordTerm(@PathVariable Long userId, @PathVariable String term) {
+        return ResultHelper.success(recordService.selectRecordListByUserId(userId, term), "成功获取个人数据");
     }
 
     @ConvertTime
@@ -41,7 +41,7 @@ public class RecordController {
     public ResultVO<List<RankDTO>> getTopFive(@RequestParam(value = "old-man", defaultValue = "") String oldMan) {
         if (oldMan == null || oldMan.equals("")) {
             return ResultHelper.success(rankService.getTopFive(), "成功获取有效排行榜");
-        }else {
+        } else {
             return ResultHelper.success(rankService.getTopFiveOfOldMan(), "成功获取老人有效排行榜");
         }
 
@@ -57,21 +57,28 @@ public class RecordController {
     public ResultVO<UserStatusDTO> isOnline(@PathVariable Long userId) {
         return ResultHelper.success(recordService.isOnlineByUserId(userId), "成功获取用户在线状态");
     }
+
     @GetMapping("/time/{userId}")
-    public ResultVO<RecordDTO> getTime(@PathVariable Long userId){
+    public ResultVO<RecordDTO> getTime(@PathVariable Long userId) {
         return ResultHelper.success(recordService.getUserStatus(userId), "成功获取用户在线状态");
     }
 
     //返回记录分组信息
 
     @GetMapping("/term/{userId}")
-    public ResultVO<List<String>> getTerm(@PathVariable Long userId){
+    public ResultVO<List<String>> getTerm(@PathVariable Long userId) {
         return ResultHelper.success(recordService.getTerm(userId));
     }
 
     @GetMapping("/export")
     public void exportRank(@Param("password") String password, @Param("term") String term, @Param("week") Integer week, HttpServletResponse resp) throws IOException {
-        rankService.dowRank(password,term,week,resp);
+        rankService.dowRank(password, term, week, resp);
+    }
+
+    @GetMapping("/export/term")
+    public void exportRank1(@Param("password") String password, @Param("term") String term, @Param("start_week") int startWeek,
+                            @Param("end_week") int endWeek, HttpServletResponse resp) throws IOException {
+        rankService.getTermRankWithWeeklyStats(password, term, startWeek, endWeek, resp);
     }
 
 
