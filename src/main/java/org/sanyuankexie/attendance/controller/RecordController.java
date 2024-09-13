@@ -76,8 +76,8 @@ public class RecordController {
     }
 
     @GetMapping("/export/term")
-    public void exportRank1(@Param("password") String password, @Param("term") String term, @Param("start_week") int startWeek,
-                            @Param("end_week") int endWeek, HttpServletResponse resp) throws IOException {
+    public void exportRank1(@Param("password") String password, @Param("term") String term, @Param("start_week") Integer startWeek,
+                            @Param("end_week") Integer endWeek, HttpServletResponse resp) throws IOException {
         rankService.getTermRankWithWeeklyStats(password, term, startWeek, endWeek, resp);
     }
 

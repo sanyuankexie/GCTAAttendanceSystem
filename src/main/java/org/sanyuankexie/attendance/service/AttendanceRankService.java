@@ -139,8 +139,8 @@ public class AttendanceRankService {
         }
     }
 
-    public void getTermRankWithWeeklyStats(String password, String trem, int startWeek,
-                            int endWeek, HttpServletResponse resp) throws IOException {
+    public void getTermRankWithWeeklyStats(String password, String trem, Integer startWeek,
+                                           Integer endWeek, HttpServletResponse resp) throws IOException {
         //默认值
         trem = trem == null ? systemInfo.getTerm() : trem;
 
