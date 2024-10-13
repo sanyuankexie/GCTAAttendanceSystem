@@ -7,12 +7,15 @@
 plugins {
     java
     `maven-publish`
-    id("org.springframework.boot") version "3.3.0"
+    id("org.springframework.boot") version "3.3.2"
     kotlin("jvm")
 }
 
 repositories {
     mavenLocal()
+    maven {
+        url = uri("https://plugins.gradle.org/m2/")
+    }
     maven {
         url = uri("https://repo.maven.apache.org/maven2/")
     }
