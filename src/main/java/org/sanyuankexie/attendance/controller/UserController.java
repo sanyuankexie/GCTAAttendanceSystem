@@ -48,6 +48,7 @@ public class UserController {
     @PostMapping(value = "/modify")
     public ResultVO<RankDTO> modifyTime(@RequestBody JSONObject jsonObject) {
         return ResultHelper.success(userService.modifyTime(
+
                 jsonObject.getString("operation"),
                 jsonObject.getLong("userId"),
                 jsonObject.getString("time"),
@@ -69,6 +70,16 @@ public class UserController {
     @GetMapping("/export")
     public void exportUsers(HttpServletResponse response, @Param("password") String password, @Nullable @Param("grade") String grade) throws IOException {
         userService.exportUsersToCsv(response, password, grade);
+    }
+
+//    @PostMapping("/sendCode")
+//    public ResultVO<String> sendCode(@RequestParam("studentId") Long studentId) {
+//        return ResultHelper.success(userService.sendCode(studentId));
+//    }
+
+    @PostMapping("/login")
+    public ResultVO<String> login(@RequestBody JSONObject jsonObject) {
+        return ResultHelper.success(userService.login(jsonObject.getLong("id"), jsonObject.getString("password")));
     }
 
 }

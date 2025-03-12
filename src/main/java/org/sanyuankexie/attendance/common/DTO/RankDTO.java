@@ -12,6 +12,4 @@ public class RankDTO {
     private Object totalTime;
     private Object accumulatedTime;
     private int week;
-
-
 }
