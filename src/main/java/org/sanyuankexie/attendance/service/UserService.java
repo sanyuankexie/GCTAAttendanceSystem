@@ -5,7 +5,9 @@ import com.alibaba.excel.read.listener.PageReadListener;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.opencsv.CSVWriter;
+import lombok.extern.slf4j.Slf4j;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
+import org.sanyuankexie.attendance.common.DTO.RecordDTO;
 import org.sanyuankexie.attendance.common.DTO.UserStatusEnum;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
 import org.sanyuankexie.attendance.common.exception.ServiceException;
@@ -32,11 +34,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.lang.reflect.Field;
+import java.nio.charset.StandardCharsets;
 import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Pattern;
 
 @Service
+@Slf4j
 public class UserService {
     private static final ConcurrentHashMap<Long, Long> defenderMap = new ConcurrentHashMap<>();
 
@@ -417,4 +421,30 @@ public class UserService {
         }
         return info;
     }
+
+    public String encrypt(String text, String key) {
+        byte[] textBytes = text.getBytes(StandardCharsets.UTF_8);
+        byte[] keyBytes = key.getBytes(StandardCharsets.UTF_8);
+
+        // 循环异或加密
+        byte[] encryptedBytes = new byte[textBytes.length];
+        for (int i = 0; i < textBytes.length; i++) {
+            encryptedBytes[i] = (byte) (textBytes[i] ^ keyBytes[i % keyBytes.length]);
+        }
+
+        // Base64编码
+        return Base64.getEncoder().encodeToString(encryptedBytes);
+    }
+
+    @Transactional
+    public String login(Long id, String password) {
+        User user = userMapper.selectByUserId(id);
+        if (user != null && user.getRole() > 0 && systemInfo.getPassword().equals(password)) {
+            return encrypt(id.toString(), "kexieisbest");
+        } else {
+            throw new ServiceException(CExceptionEnum.LOGIN_FAILED);
+        }
+    }
+
+
 }

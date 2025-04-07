@@ -12,6 +12,7 @@ import org.sanyuankexie.attendance.common.handler.UserStatusHandler;
 @TableName( autoResultMap = true ) //开启处理器
 public class RecordDTO  {
 
+    private String id;
     private Long userId;
     private String userName;
     private String userDept;

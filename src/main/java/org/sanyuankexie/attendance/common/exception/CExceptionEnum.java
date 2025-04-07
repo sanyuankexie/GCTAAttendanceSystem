@@ -4,6 +4,7 @@ package org.sanyuankexie.attendance.common.exception;
 
 public enum CExceptionEnum {
     UNKNOWN(-1, "Unknown exception"),
+    LOGIN_FAILED(-100, "验证失败"),
     USER_NO_EXIST(-200, "用户名不存在"),
     USER_ONLINE(-201, "不许重复签到"),
     USER_OFFLINE(-202, "宁没有签到噢"),

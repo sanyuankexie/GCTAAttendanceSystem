@@ -32,7 +32,6 @@ public class BeanConfig {
         simpleDateFormat.setTimeZone(TimeZone.getTimeZone("Asia/Shanghai"));
         try {
             Date w0 = simpleDateFormat.parse(systemInfo.getWeek());
-
             return new TimeHelper(w0.getTime());
         } catch (ParseException e) {
             e.printStackTrace();

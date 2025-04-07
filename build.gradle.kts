@@ -11,6 +11,7 @@ plugins {
     kotlin("jvm")
 }
 
+
 repositories {
     mavenLocal()
     maven {
@@ -24,13 +25,16 @@ repositories {
 
 dependencies {
     // https://mvnrepository.com/artifact/com.opencsv/opencsv
+    implementation("org.apache.httpcomponents:httpclient:4.5.13")
     implementation("com.opencsv:opencsv:5.9")
+    implementation("io.minio:minio:8.5.17")
     implementation("com.alibaba:druid-spring-boot-starter:1.1.17")
     implementation("com.baomidou:mybatis-plus-boot-starter:3.4.2")
     implementation("org.springframework.boot:spring-boot-starter:2.3.4.RELEASE")
     implementation("org.springframework.boot:spring-boot-starter-aop:2.3.4.RELEASE")
     implementation("org.springframework.boot:spring-boot-starter-web:2.3.4.RELEASE")
-
+    implementation("javax.validation:validation-api:2.0.1.Final")
+    implementation("org.hibernate.validator:hibernate-validator:6.0.13.Final")
     // 如果出现 Bug , see https://mp.weixin.qq.com/s?__biz=MzAwMjk5NTY3Mw==&mid=2247483950&idx=1&sn=47c6c1fed54b134f46f6dedafd34db0c&chksm=9ac0a698adb72f8e769bcfbff5a4fb0450f181bb754a2ad615dc17002f14d7ec039c0e24a1d7&token=395785991&lang=zh_CN#rd
     implementation("com.alibaba:easyexcel:3.3.4")
     implementation("mysql:mysql-connector-java:8.0.18")

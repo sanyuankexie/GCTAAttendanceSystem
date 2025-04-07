@@ -44,7 +44,7 @@ public interface AttendanceRecordMapper extends BaseMapper<RecordDTO>     {
     //手写语句需要映射+继承base
     @ResultMap( MYBATIS_PLUS + UNDERSCORE + "RecordDTO")
     @Select("SELECT " +
-            "r.user_id user_id, r.start start, r.end end, r.status status, " +
+            "r.id id, r.user_id user_id, r.start start, r.end end, r.status status, " +
             "u.name user_name, u.dept user_dept, u.location user_location, r.accumulated_time accumulated_time " +
             "FROM attendance_record r " +
             "LEFT JOIN user u ON u.id=r.user_id " +
