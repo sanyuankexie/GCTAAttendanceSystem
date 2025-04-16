@@ -14,10 +14,8 @@ import org.thymeleaf.context.Context;
 
 import javax.annotation.Resource;
 import javax.mail.MessagingException;
-import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
 import javax.mail.util.ByteArrayDataSource;
-import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -82,8 +80,7 @@ public class MailService {
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
             MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
-            //messageHelper.setFrom("科协官方" + "zluo1216@163.com"); // 这里换成科协的邮箱
-            messageHelper.setFrom(new InternetAddress("zluo1216@163.com", "科协官方", "UTF-8"));
+            messageHelper.setFrom("科协官方" + "<official@kexie.space>"); // 这里换成科协的邮箱
             messageHelper.setTo(user.getEmail());
             messageHelper.setSubject(title);
 
@@ -94,7 +91,7 @@ public class MailService {
                 messageHelper.addAttachment(attachmentData.getFilename(), new ByteArrayDataSource(attachmentData.getStream().toByteArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
             }
             javaMailSender.send(messageHelper.getMimeMessage());
-        } catch (MessagingException | UnsupportedEncodingException e) {
+        } catch (MessagingException e) {
             log.error("发送<{}>的邮件失败",userId);
         }
     }
