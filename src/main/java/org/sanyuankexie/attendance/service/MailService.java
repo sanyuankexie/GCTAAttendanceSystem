@@ -2,15 +2,23 @@ package org.sanyuankexie.attendance.service;
 
 
 import lombok.extern.slf4j.Slf4j;
+import org.sanyuankexie.attendance.model.AttachmentData;
 import org.sanyuankexie.attendance.model.User;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 
+import javax.annotation.Resource;
 import javax.mail.MessagingException;
+import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.util.ByteArrayDataSource;
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.TimeZone;
@@ -35,7 +43,7 @@ public class MailService {
     }
 
 
-    public void sendMailByUserId(Long userId, String mailTemplateName, String title) {
+    public void sendMailByUserId(Long userId, String mailTemplateName, String title, AttachmentData attachmentData) {
 
         Context context = new Context();
 
@@ -73,16 +81,20 @@ public class MailService {
         //下面是发送信息
         try {
             MimeMessage mimeMessage = javaMailSender.createMimeMessage();
-            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage,"UTF-8");
-            messageHelper.setFrom("科协官方" + "<official@kexie.space>"); // 这里换成科协的邮箱
+            MimeMessageHelper messageHelper = new MimeMessageHelper(mimeMessage, true, "UTF-8");
+            //messageHelper.setFrom("科协官方" + "zluo1216@163.com"); // 这里换成科协的邮箱
+            messageHelper.setFrom(new InternetAddress("zluo1216@163.com", "科协官方", "UTF-8"));
             messageHelper.setTo(user.getEmail());
             messageHelper.setSubject(title);
 
             String mailContent = templateEngine.process(mailTemplateName, context);
             messageHelper.setText(mailContent, true);
-
+            // 添加附件（如果有）
+            if (attachmentData != null) {
+                messageHelper.addAttachment(attachmentData.getFilename(), new ByteArrayDataSource(attachmentData.getStream().toByteArray(), "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"));
+            }
             javaMailSender.send(messageHelper.getMimeMessage());
-        } catch (MessagingException e) {
+        } catch (MessagingException | UnsupportedEncodingException e) {
             log.error("发送<{}>的邮件失败",userId);
         }
     }

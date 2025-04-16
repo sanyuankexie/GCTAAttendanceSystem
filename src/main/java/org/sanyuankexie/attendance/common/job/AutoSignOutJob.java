@@ -60,7 +60,7 @@ public class AutoSignOutJob {
         for (RecordDTO onlineUser : onlineUsers) {
             try {
                 target = onlineUser.getUserId();
-                threadPoolTaskExecutor.execute(new EmailThread(mailService, target, "AutoSignOutRemind.html", "[科协签到]: 今日签退提醒"));
+                threadPoolTaskExecutor.execute(new EmailThread(mailService, target, "AutoSignOutRemind.html", "[科协签到]: 今日签退提醒", null));
             } catch (Exception e) {
                 log.error( "<System><{}>签退提醒发生了一些错误",target);
             }
@@ -81,7 +81,7 @@ public class AutoSignOutJob {
             try {
                 target = onlineUser.getUserId();
                 userService.helpSignOut(target);
-                threadPoolTaskExecutor.execute(new EmailThread(mailService, target, "AutoSignOut.html", "[科协签到]: 晚间签退通知"));
+                threadPoolTaskExecutor.execute(new EmailThread(mailService, target, "AutoSignOut.html", "[科协签到]: 晚间签退通知", null));
                 log.info("<System><{}>已自动签退", target );
             } catch (Exception e) {
                 log.error( "<System><{}>自动签退时发生了一些错误",target);
