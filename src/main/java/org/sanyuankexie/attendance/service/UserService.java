@@ -172,7 +172,7 @@ public class UserService {
             onlineRecord.setEnd(System.currentTimeMillis());
             onlineRecord.setOperatorId(operatorUserId);
             recordService.updateById(onlineRecord);
-            threadPoolTaskExecutor.execute(new EmailThread(mailService, targetUserId, "complaint.html", "[科协签到]: 举报下线通知"));
+            threadPoolTaskExecutor.execute(new EmailThread(mailService, targetUserId, "complaint.html", "[科协签到]: 举报下线通知", null));
         } else {
             throw new ServiceException(CExceptionEnum.USER_C_OFFLINE, targetUserId);
         }

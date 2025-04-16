@@ -14,5 +14,6 @@ public class SystemInfo {
     String term;
     int grade;
     String password;
+    Long mailTarget;
 
 }

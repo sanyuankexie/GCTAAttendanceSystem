@@ -4,8 +4,6 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.apache.ibatis.annotations.Param;
-import org.apache.poi.util.StringUtil;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.DTO.RecordDTO;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
@@ -19,6 +17,7 @@ import org.sanyuankexie.attendance.model.TermRankExport;
 import org.springframework.stereotype.Service;
 
 import javax.servlet.http.HttpServletResponse;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.URLEncoder;
 import java.util.*;
@@ -84,6 +83,26 @@ public class AttendanceRankService {
         List<RecordDTO> list = recordMapper.selectOnlineRecord();
         Collections.shuffle(list);
         return list;
+    }
+
+
+    public ByteArrayOutputStream generateLastWeekRankExcelBytes(String trem, int week) {
+        List<RankExport> newWeekRank = attendanceRankMapper.getNewWeekRank(trem, String.valueOf(week), systemInfo.getGrade());
+        List<RankExport> oldWeekRank = attendanceRankMapper.getOldWeekRank(trem, String.valueOf(week), systemInfo.getGrade());
+
+        ByteArrayOutputStream out = new ByteArrayOutputStream();
+        try {
+            ExcelWriter excelWriter = EasyExcel.write(out, RankExport.class).autoCloseStream(false).build();
+            WriteSheet newRank = EasyExcel.writerSheet( "新人").build();
+            WriteSheet oldRank = EasyExcel.writerSheet( "老人").build();
+            excelWriter.write(newWeekRank, newRank);
+            excelWriter.write(oldWeekRank, oldRank);
+            excelWriter.finish();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return null;
+        }
+        return out;
     }
 
 
