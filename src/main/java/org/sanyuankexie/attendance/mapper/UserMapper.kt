@@ -24,6 +24,11 @@ interface UserMapper {
     """)
     fun selectList(@Param("grade") grade: String?): List<User>
 
+    @Select("""
+        SELECT * FROM USER WHERE role=#{department}
+    """)
+    fun selectDepartmentManager(@Param("department") department: Int) : List<User>
+
     @Delete("""
         <script>
         DELETE FROM user 
