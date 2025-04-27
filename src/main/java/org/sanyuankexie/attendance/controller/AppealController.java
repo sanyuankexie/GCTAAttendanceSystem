@@ -2,7 +2,6 @@ package org.sanyuankexie.attendance.controller;
 
 import org.sanyuankexie.attendance.common.DTO.AppealDealDTO;
 import org.sanyuankexie.attendance.common.DTO.AppealQueryDTO;
-import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.api.ResultVO;
 import org.sanyuankexie.attendance.common.aspect.annotation.ConvertTime;
 import org.sanyuankexie.attendance.common.helper.ResultHelper;

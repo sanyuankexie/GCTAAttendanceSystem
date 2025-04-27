@@ -11,4 +11,6 @@ public class AppealQueryDTO {
     private Long studentId; //申诉人学号
     private Integer status; // 申诉状态
     private Long operator; // 申诉处理者的学号
+    private Integer pageNum; // 分页页码
+    private Integer pageSize; // 分页大小
 }

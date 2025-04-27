@@ -40,6 +40,7 @@ public interface AppealRecordMapper {
             "<if test='name != null and name != \"\"'>AND u.name = #{name} </if>" +
             "<if test='department != null and department != \"\"'>AND u.dept = #{department} </if>" +
             "<if test='operator != null'>AND ar.operator_id = #{operator} </if>" +
+            "LIMIT #{pageSize} OFFSET #{pageNum}" +  // 使用 LIMIT 和 OFFSET 来实现分页
             "</script>")
     @Results(id = "appealRecordResultMap", value = {
             @Result(property = "appealUser", column = "appeal_user_id", one = @One(select = "org.sanyuankexie.attendance.mapper.UserMapper.selectByUserId")),
@@ -53,7 +54,9 @@ public interface AppealRecordMapper {
             @Param("term") String term,
             @Param("studentId") Long studentId,
             @Param("status") Integer status,
-            @Param("operator") Long operator
+            @Param("operator") Long operator,
+            @Param("pageSize") int pageSize,  // 每页条数
+            @Param("pageNum") int pageNum     // 当前页的偏移量，通常是 (pageNum - 1) * pageSize
     );
 
 

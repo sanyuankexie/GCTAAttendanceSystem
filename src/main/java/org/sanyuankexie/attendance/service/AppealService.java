@@ -1,6 +1,5 @@
 package org.sanyuankexie.attendance.service;
 
-
 import lombok.extern.slf4j.Slf4j;
 import org.sanyuankexie.attendance.common.DTO.AppealDealDTO;
 import org.sanyuankexie.attendance.common.DTO.AppealQueryDTO;
@@ -81,20 +80,31 @@ public class AppealService {
             try {
                 target = manager.getId();
                 threadPoolTaskExecutor.execute(new EmailThread(mailService, target, "RemindManager.html", "[科协事务]: 有新的申诉需要处理", null));
-                log.error( "<System><{}>已发送提醒成功",target);
+                log.info("<System><{}>已发送提醒成功", target);
             } catch (Exception e) {
-                log.error( "<System><{}>事务提醒发生了一些错误",target);
+                log.error("<System><{}>事务提醒发生了一些错误", target);
             }
         }
     }
 
     /**
-     * 获取申诉记录列表
+     * 获取申诉记录列表（带分页）
      *
      * @param appealQueryDTO 查询条件
-     * @return 申诉记录列表
+     * @return 分页结果
      */
     public List<AppealRecord> getAppealList(AppealQueryDTO appealQueryDTO) {
+        Integer pageNum = appealQueryDTO.getPageNum();
+        Integer pageSize = appealQueryDTO.getPageSize();
+        if (pageNum == null || pageNum <= 0) {
+            pageNum = 1;  // 默认第一页
+        }
+        if (pageSize == null || pageSize <= 0) {
+            pageSize = Integer.MAX_VALUE;  // 如果没有分页参数，则查询所有记录
+        }
+        // 计算偏移量
+        int offset = (pageNum - 1) * pageSize;
+        // 执行查询
         return appealRecordMapper.selectAppealRecords(
                 appealQueryDTO.getAppealId(),
                 appealQueryDTO.getName(),
@@ -102,7 +112,9 @@ public class AppealService {
                 appealQueryDTO.getTerm(),
                 appealQueryDTO.getStudentId(),
                 appealQueryDTO.getStatus(),
-                appealQueryDTO.getOperator()
+                appealQueryDTO.getOperator(),
+                pageSize,
+                offset
         );
     }
 
@@ -135,8 +147,17 @@ public class AppealService {
             record.setFailedReason(appealDealDTO.getFailedReason());
         }
         appealRecordMapper.updateById(record); // 更新数据库
-
+        sendMailRemindAppealer(record.getAppealUser().getId());
         return "处理成功";
+    }
+
+    public void sendMailRemindAppealer(long studentId) {
+        try {
+            threadPoolTaskExecutor.execute(new EmailThread(mailService, studentId, "RemindAppealer.html", "[科协事务]: 你的申诉已被处理", null));
+            log.info("<System><{}>已发送提醒成功", studentId);
+        } catch (Exception e) {
+            log.error("<System><{}>事务提醒发生了一些错误", studentId);
+        }
     }
 
     /**
