@@ -40,7 +40,7 @@ public class AutoSendWeekRank {
     private SystemInfo systemInfo;
 
     // 每周一早上 8.00 发送上周打卡排名邮件
-    @Scheduled(cron = "0 0 8 ? * MON")
+    @Scheduled(cron = "0 0 8 * * ?")
     void weeklySendRank(){
         try {
             scheduleSendMail();
@@ -55,7 +55,7 @@ public class AutoSendWeekRank {
         int nowWeek = timeHelper.getNowWeek();
         String[] t = term.split("_");
         String lable = t[0] + "-" + t[1] + ("1".equals(t[2]) ? "上学期" : "下学期");
-        ByteArrayOutputStream stream = attendanceRankService.generateLastWeekRankExcelBytes(term, week);
+        ByteArrayOutputStream stream = attendanceRankService.generateLastWeekRankExcelBytes(term, week + nowWeek);
         String fileName =  lable + "第" + (nowWeek - 1) + "周" + ".xlsx";
         String encodedFileName = MimeUtility.encodeText(fileName, "UTF-8", "B");
         AttachmentData attachmentData = new AttachmentData();
