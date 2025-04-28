@@ -40,7 +40,7 @@ public class AutoSendWeekRank {
     private SystemInfo systemInfo;
 
     // 每周一早上 8.00 发送上周打卡排名邮件
-    @Scheduled(cron = "0 0 18 * * ?")
+    @Scheduled(cron = "0 0 8 * * ?")
     void weeklySendRank(){
         try {
             scheduleSendMail();
