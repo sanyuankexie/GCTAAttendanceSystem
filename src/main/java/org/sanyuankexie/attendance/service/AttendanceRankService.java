@@ -4,6 +4,7 @@ import com.alibaba.excel.EasyExcel;
 import com.alibaba.excel.ExcelWriter;
 import com.alibaba.excel.write.metadata.WriteSheet;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.DTO.RecordDTO;
 import org.sanyuankexie.attendance.common.exception.CExceptionEnum;
@@ -23,6 +24,7 @@ import java.net.URLEncoder;
 import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
+@Slf4j
 @Service
 public class AttendanceRankService {
     private final AttendanceRankMapper rankMapper;
@@ -90,14 +92,16 @@ public class AttendanceRankService {
         List<RankExport> newWeekRank = attendanceRankMapper.getNewWeekRank(trem, String.valueOf(week), systemInfo.getGrade());
         List<RankExport> oldWeekRank = attendanceRankMapper.getOldWeekRank(trem, String.valueOf(week), systemInfo.getGrade());
 
+        log.info(newWeekRank.toString());
+        log.info(oldWeekRank.toString());
+
         ByteArrayOutputStream out = new ByteArrayOutputStream();
         try {
-            ExcelWriter excelWriter = EasyExcel.write(out, RankExport.class).autoCloseStream(false).build();
+            ExcelWriter excelWriter = EasyExcel.write(out, RankExport.class).build();
             WriteSheet newRank = EasyExcel.writerSheet( "新人").build();
             WriteSheet oldRank = EasyExcel.writerSheet( "老人").build();
             excelWriter.write(newWeekRank, newRank);
             excelWriter.write(oldWeekRank, oldRank);
-            excelWriter.finish();
         } catch (Exception e) {
             e.printStackTrace();
             return null;
@@ -136,7 +140,6 @@ public class AttendanceRankService {
                 systemInfo.getGrade());
         List<RankExport> oldWeekRank = attendanceRankMapper.getOldWeekRank(trem, String.valueOf(nowWeek),
                 systemInfo.getGrade());
-
         String[] t = trem.split("_");
         String lable = t[0] + "-" + t[1] + ("1".equals(t[2]) ? "上学期" : "下学期");
         resp.setHeader("Content-Type", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
