@@ -96,8 +96,9 @@ public class AttendanceRankService {
         log.info(oldWeekRank.toString());
 
         ByteArrayOutputStream out = new ByteArrayOutputStream();
+        ExcelWriter excelWriter = null;
         try {
-            ExcelWriter excelWriter = EasyExcel.write(out, RankExport.class).build();
+            excelWriter = EasyExcel.write(out, RankExport.class).build();
             WriteSheet newRank = EasyExcel.writerSheet( "新人").build();
             WriteSheet oldRank = EasyExcel.writerSheet( "老人").build();
             excelWriter.write(newWeekRank, newRank);
@@ -105,6 +106,11 @@ public class AttendanceRankService {
         } catch (Exception e) {
             e.printStackTrace();
             return null;
+        } finally {
+            // 强制写入
+            if (excelWriter != null) {
+                excelWriter.finish();
+            }
         }
         return out;
     }
