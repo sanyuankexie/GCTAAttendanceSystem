@@ -16,8 +16,6 @@ import javax.annotation.Resource;
 import javax.mail.internet.MimeUtility;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.net.URLEncoder;
-import java.nio.charset.StandardCharsets;
 
 @Service
 @Slf4j
@@ -40,7 +38,7 @@ public class AutoSendWeekRank {
     private SystemInfo systemInfo;
 
     // 每周一早上 8.00 发送上周打卡排名邮件
-    @Scheduled(cron = "0 0 8 * * ?")
+    @Scheduled(cron = "0 0 8 ? * MON")
     void weeklySendRank(){
         try {
             scheduleSendMail();
@@ -66,7 +64,7 @@ public class AutoSendWeekRank {
             threadPoolTaskExecutor.execute(new EmailThread(mailService, target, "AutoSendRank.html", "[科协通知]: 每周打卡统计", attachmentData));
             log.info("<System><{}>已发送每周报表", target);
         } catch (Exception e) {
-            log.error( "<System><{}>发送每周打卡排名失败");
+            log.error( "<System>发送每周打卡排名失败");
         }
     }
 
