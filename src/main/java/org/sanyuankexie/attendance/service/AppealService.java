@@ -164,7 +164,7 @@ public class AppealService {
      * 取得对应部门编号
      *
      * @param dept 部门名称
-     * @return 部门编号，2是软件部，3是多媒体部，4是硬件部，1是主席团除三大部长外成员
+     * @return 部门编号，2是软件部，3是多媒体部，4是硬件部，5是安全部，1是主席团除三大部长外成员
      */
     int mapDepartment(String dept) {
         switch (dept) {
@@ -174,6 +174,8 @@ public class AppealService {
                 return 3;
             case "硬件部":
                 return 4;
+            case "安全部":
+                return 5;
             default:
                 return 1;
         }
