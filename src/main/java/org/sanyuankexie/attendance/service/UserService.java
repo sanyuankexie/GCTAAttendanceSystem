@@ -359,7 +359,7 @@ public class UserService {
                         continue;
                     }
 
-                    String[] dept = {"多媒体部", "软件部", "硬件部", "老人"};
+                    String[] dept = {"多媒体部", "软件部", "硬件部", "安全部", "老人"};
                     if (Arrays.stream(dept).noneMatch(v -> v.equals(demoData.getDept()))) {
                         info(userInfo, demoData, "所在部门存在问题");
                         continue;
