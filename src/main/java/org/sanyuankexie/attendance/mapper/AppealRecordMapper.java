@@ -40,6 +40,7 @@ public interface AppealRecordMapper {
             "<if test='name != null and name != \"\"'>AND u.name = #{name} </if>" +
             "<if test='department != null and department != \"\"'>AND u.dept = #{department} </if>" +
             "<if test='operator != null'>AND ar.operator_id = #{operator} </if>" +
+            "ORDER BY ar.appeal_time DESC " +  // <!-这里加上倒序排序保证获取的数据是从新的开始 ->
             "LIMIT #{pageSize} OFFSET #{pageNum}" +  // 使用 LIMIT 和 OFFSET 来实现分页
             "</script>")
     @Results(id = "appealRecordResultMap", value = {
@@ -58,6 +59,30 @@ public interface AppealRecordMapper {
             @Param("pageSize") int pageSize,  // 每页条数
             @Param("pageNum") int pageNum     // 当前页的偏移量，通常是 (pageNum - 1) * pageSize
     );
+
+    // 统计分页数量
+    @Select("<script>" +
+            "SELECT COUNT(*) FROM appeal_record ar " +
+            "JOIN user u ON ar.appeal_user_id = u.id " +
+            "WHERE 1=1 " +
+            "<if test='appealId != null and appealId != \"\"'>AND ar.id = #{appealId} </if>" +
+            "<if test='status != null'>AND ar.status = #{status} </if>" +
+            "<if test='term != null and term != \"\"'>AND ar.term = #{term} </if>" +
+            "<if test='studentId != null'>AND u.id = #{studentId} </if>" +
+            "<if test='name != null and name != \"\"'>AND u.name = #{name} </if>" +
+            "<if test='department != null and department != \"\"'>AND u.dept = #{department} </if>" +
+            "<if test='operator != null'>AND ar.operator_id = #{operator} </if>" +
+            "</script>")
+    long countAppealRecords(
+            @Param("appealId") String appealId,
+            @Param("name") String name,
+            @Param("department") String department,
+            @Param("term") String term,
+            @Param("studentId") Long studentId,
+            @Param("status") Integer status,
+            @Param("operator") Long operator
+    );
+
 
 
     @Update("UPDATE appeal_record SET " +
