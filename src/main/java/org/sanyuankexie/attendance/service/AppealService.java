@@ -3,8 +3,7 @@ package org.sanyuankexie.attendance.service;
 import lombok.extern.slf4j.Slf4j;
 import org.sanyuankexie.attendance.common.DTO.AppealDealDTO;
 import org.sanyuankexie.attendance.common.DTO.AppealQueryDTO;
-import org.sanyuankexie.attendance.common.DTO.RankDTO;
-import org.sanyuankexie.attendance.common.DTO.RecordDTO;
+import org.sanyuankexie.attendance.common.helper.PageResultHelper;
 import org.sanyuankexie.attendance.mapper.AppealRecordMapper;
 import org.sanyuankexie.attendance.mapper.UserMapper;
 import org.sanyuankexie.attendance.model.AppealRecord;
@@ -61,7 +60,7 @@ public class AppealService {
         appealRecord.setAppealTime(nowTime);
         appealRecord.setStatus(0);
         appealRecord.setTerm(systemInfo.getTerm());
-        System.out.print(appealRecord.toString());
+        System.out.print(appealRecord);
         appealRecordMapper.insert(appealRecord);
         sendMailRemindManager(user.getId());  // 发送邮件提醒对应正副部长及时处理该请求
         return thisRecordId;
@@ -93,7 +92,7 @@ public class AppealService {
      * @param appealQueryDTO 查询条件
      * @return 分页结果
      */
-    public List<AppealRecord> getAppealList(AppealQueryDTO appealQueryDTO) {
+    public PageResultHelper<AppealRecord> getAppealList(AppealQueryDTO appealQueryDTO) {
         Integer pageNum = appealQueryDTO.getPageNum();
         Integer pageSize = appealQueryDTO.getPageSize();
         if (pageNum == null || pageNum <= 0) {
@@ -105,7 +104,7 @@ public class AppealService {
         // 计算偏移量
         int offset = (pageNum - 1) * pageSize;
         // 执行查询
-        return appealRecordMapper.selectAppealRecords(
+        List<AppealRecord> records = appealRecordMapper.selectAppealRecords(
                 appealQueryDTO.getAppealId(),
                 appealQueryDTO.getName(),
                 appealQueryDTO.getDepartment(),
@@ -115,6 +114,21 @@ public class AppealService {
                 appealQueryDTO.getOperator(),
                 pageSize,
                 offset
+        );
+        long total = appealRecordMapper.countAppealRecords(
+                appealQueryDTO.getAppealId(),
+                appealQueryDTO.getName(),
+                appealQueryDTO.getDepartment(),
+                appealQueryDTO.getTerm(),
+                appealQueryDTO.getStudentId(),
+                appealQueryDTO.getStatus(),
+                appealQueryDTO.getOperator()
+        );
+        return new PageResultHelper<>(
+                records,
+                total,
+                pageNum,
+                pageSize
         );
     }
 
