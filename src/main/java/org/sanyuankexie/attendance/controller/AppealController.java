@@ -4,6 +4,7 @@ import org.sanyuankexie.attendance.common.DTO.AppealDealDTO;
 import org.sanyuankexie.attendance.common.DTO.AppealQueryDTO;
 import org.sanyuankexie.attendance.common.api.ResultVO;
 import org.sanyuankexie.attendance.common.aspect.annotation.ConvertTime;
+import org.sanyuankexie.attendance.common.helper.PageResultHelper;
 import org.sanyuankexie.attendance.common.helper.ResultHelper;
 import org.sanyuankexie.attendance.model.AppealRecord;
 import org.sanyuankexie.attendance.model.AppealRequest;
@@ -39,7 +40,7 @@ public class AppealController {
 
     @ConvertTime
     @GetMapping(value = "/getAppeal")
-    public ResultVO<List<AppealRecord>> getAppeal(@ModelAttribute @Valid AppealQueryDTO dto) {
+    public ResultVO<PageResultHelper<AppealRecord>> getAppeal(@ModelAttribute @Valid AppealQueryDTO dto) {
         return ResultHelper.success(appealService.getAppealList(dto),"获取成功");
     }
 
