@@ -2,10 +2,12 @@ package org.sanyuankexie.attendance.controller;
 
 import com.alibaba.fastjson.JSONObject;
 import org.apache.ibatis.annotations.Param;
+import org.sanyuankexie.attendance.common.DTO.AppealQueryDTO;
 import org.sanyuankexie.attendance.common.DTO.RankDTO;
 import org.sanyuankexie.attendance.common.api.ResultVO;
 import org.sanyuankexie.attendance.common.aspect.annotation.ConvertTime;
 import org.sanyuankexie.attendance.common.helper.ResultHelper;
+import org.sanyuankexie.attendance.model.User;
 import org.sanyuankexie.attendance.service.UserService;
 import org.springframework.lang.Nullable;
 import org.springframework.web.bind.annotation.*;
@@ -13,6 +15,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletResponse;
+import javax.validation.Valid;
 import java.io.IOException;
 import java.util.Map;
 
@@ -60,6 +63,11 @@ public class UserController {
     @PostMapping("/import")
     public ResultVO<Map<String, Object>> impUser(@RequestPart("user") MultipartFile file, @Param("password") String password) {
         return ResultHelper.success(userService.importUser(file, password));
+    }
+
+    @PostMapping("/addSingleUser")
+    public ResultVO<Map<String, Object>> addUser(@ModelAttribute @Valid User user, @Param("password") String password) {
+        return ResultHelper.success(userService.addSingleUser(user, password));
     }
 
     @DeleteMapping("/delete")

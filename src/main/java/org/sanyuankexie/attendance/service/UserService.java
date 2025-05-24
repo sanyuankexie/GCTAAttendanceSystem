@@ -282,6 +282,52 @@ public class UserService {
         return map;
     }
 
+    public Map<String, Object> addSingleUser(User user, String password) {
+        Map<String, Object> map = new HashMap<>();
+        if (!systemInfo.getPassword().equals(password)) {
+            map.put("result", "密码不正确");
+            return map;
+        }
+        String info = "";
+        if (isNull(user)) {
+            info = user.getId() + "(" + user.getName() + ")" + ": " + "用户数据不全(除github)";
+        }
+        if (!checkMail(user.getEmail())) {
+            info = user.getId() + "(" + user.getName() + ")" + ": " + "邮箱检验不通过";
+        }
+
+        if (String.valueOf(user.getId()).length() != "2000300223".length()) {
+            info = user.getId() + "(" + user.getName() + ")" + ": " + "学号长度不对";
+        }
+
+        String[] location = {"5109", "5111", "5108"};
+        if (Arrays.stream(location).noneMatch(v -> v.equals(user.getLocation()))) {
+            info = user.getId() + "(" + user.getName() + ")" + ": " + "所在位置有问题";
+        }
+
+        String[] dept = {"多媒体部", "软件部", "硬件部", "安全部", "老人"};
+        if (Arrays.stream(dept).noneMatch(v -> v.equals(user.getDept()))) {
+            info = user.getId() + "(" + user.getName() + ")" + ": " + "所在部门有问题";
+        }
+
+        QueryWrapper<User> userQueryWrapper = new QueryWrapper<>();
+        userQueryWrapper.eq("id", user.getId());
+        User userExit = insertMapper.selectOne(userQueryWrapper);
+
+        if (userExit != null) {
+            List<String> change = getChange(userExit, user);
+            if (!change.isEmpty()) {
+                insertMapper.updateById(user);
+                info = user.getId() + "(" + user.getName() + ")" + ": " + "更新了数据(" + change + ")";
+            }
+        } else {
+            insertMapper.insert(user);
+            info = user.getId() + "(" + user.getName() + ")" + ": " + "已成功插入";
+        }
+        map.put("result", info);
+        return map;
+    }
+
     public void exportUsersToCsv(HttpServletResponse response, String password, String grade) throws IOException {
         if (!systemInfo.getPassword().equals(password)) {
             response.setHeader("Content-Type", "application/json");
