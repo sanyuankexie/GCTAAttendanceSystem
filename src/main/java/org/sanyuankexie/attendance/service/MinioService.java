@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
+import javax.annotation.PostConstruct;
 import javax.annotation.Resource;
 import java.io.InputStream;
 import java.net.http.HttpClient;
@@ -33,7 +34,11 @@ public class MinioService {
                 .credentials(this.minioConfig.getAccessKey(), this.minioConfig.getSecretKey())
                 .build();
         this.defaultBucketName = this.minioConfig.getBucketName();
-        initializeBucket();
+        try {
+            initializeBucket();
+        } catch (Exception e) {
+            System.err.println("Minio 初始化失败: " + e.getMessage());
+        }
     }
 
     // 初始化存储桶

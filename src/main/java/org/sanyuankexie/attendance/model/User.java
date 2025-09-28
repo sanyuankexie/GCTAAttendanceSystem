@@ -31,6 +31,6 @@ public class User {
     @NotNull(message = "学习方向不能为空")
     @ExcelProperty("方向")
     private String learn;
-    @ExcelProperty("权限")
+    @ExcelProperty("权限") //部门编号，2是软件部，3是多媒体部，4是硬件部，5是安全部，1是主席团除三大部长外成员
     private Integer role;
 }
